@@ -64,8 +64,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!token) return;
 
   fetch(`${BACKEND_URL}/api/verify`, {
-    headers: { Authorization: token }
-  }).then((res) => {
+  headers: { 
+    "Authorization": `Bearer ${token}` 
+  }
+}).then((res) => {
     if (res.status === 403 || res.status === 401) {
       localStorage.removeItem("admin_token");
       localStorage.removeItem("empleado_token");
