@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D - Solución Logística para Empresas de Reparto</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="stylesindex.css">
+</head>
+<body data-theme="dark">
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <div class="logo-container">
+                <img src="img/logo-app.png" alt="D Logo" class="logo">
+                <span class="brand-name">D</span>
+            </div>
+            <div class="nav-links">
+                <a href="#about">Sobre D</a>
+                <a href="#partners">Partners</a>
+                <a href="#roadmap">Roadmap</a>
+            </div>
+            <div class="nav-actions">
+                <button id="empresa-btn" class="empresa-btn" onclick="openEmpresaModal()">
+                    <span>🏢</span>
+                    <span>Acceso Empresa</span>
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="theme-icon">☀️</span>
+                    <span id="theme-text">Claro</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-background"></div>
+        <div class="circuit-pattern"></div>
+        <div class="hero-content">
+            <img src="img/logo-app.png" alt="D Logo" class="hero-logo">
+            <h1>D</h1>
+            <p>La plataforma definitiva para optimizar la logística de empresas de reparto al por mayor</p>
+            <a href="#about" class="cta-button">Descubre más</a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="section-header">
+            <div class="section-label">QUIÉNES SOMOS</div>
+            <h2 class="section-title">Sobre D</h2>
+            <p class="section-description">Revolucionando la forma en que las empresas gestionan sus operaciones de reparto al por mayor</p>
+        </div>
+        
+        <div class="about-content">
+            <div class="about-text">
+                <h3>Nuestra Misión</h3>
+                <p>D nace con el objetivo de simplificar y optimizar la gestión logística para empresas de distribución al por mayor. Ofrecemos una solución integral que conecta a distribuidores, transportistas y clientes en una única plataforma eficiente.</p>
+                
+                <p>Mediante tecnología de vanguardia y una interfaz intuitiva, ayudamos a las empresas a reducir costos, mejorar tiempos de entrega y aumentar la satisfacción del cliente.</p>
+                
+                <p>Nuestra visión es convertirnos en el estándar de la industria para la gestión de reparto al por mayor en todo el mercado hispanohablante.</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📦</div>
+                    <h4>Gestión Inteligente</h4>
+                    <p>Sistema automatizado de gestión de pedidos y rutas optimizadas para máxima eficiencia</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h4>Analytics Avanzado</h4>
+                    <p>Dashboards con métricas clave y reportes detallados para tomar mejores decisiones</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h4>Seguridad Total</h4>
+                    <p>Encriptación de datos y protocolos de seguridad de nivel empresarial</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Partners Section -->
+    <section id="partners">
+        <div class="section-header">
+            <div class="section-label">NUESTROS ALIADOS</div>
+            <h2 class="section-title">Partners</h2>
+            <p class="section-description">Empresas que confían en D para optimizar sus operaciones</p>
+        </div>
+        
+        <div class="partners-grid">
+            <div class="partner-card">
+                <div class="partner-logo">
+                    <img src="img/logo-empresa.png" alt="Frutas Macias Vera S.L">
+                </div>
+                <h3 class="partner-name">Frutas Macias Vera S.L</h3>
+                <p class="partner-type">Distribución de Frutas y Verduras</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap Section -->
+    <section id="roadmap">
+        <div class="section-header">
+            <div class="section-label">NUESTRO CAMINO</div>
+            <h2 class="section-title">Roadmap</h2>
+            <p class="section-description">El viaje de D: desde el lanzamiento hasta el futuro</p>
+        </div>
+        
+        <div class="roadmap-timeline">
+            <div class="timeline-line"></div>
+            <!-- roadmap-items intactos -->
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <img src="img/logo-app.png" alt="D Logo" class="footer-logo">
+            <p class="footer-text">© 2026 D - Transformando la logística del futuro</p>
+            <p class="footer-text">Optimiza. Automatiza. Crece.</p>
+            <div class="footer-links">
+                <a href="#about">Sobre Nosotros</a>
+                <a href="#partners">Partners</a>
+                <a href="#roadmap">Roadmap</a>
+                <a href="#">Contacto</a>
+                <a href="#">Privacidad</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal Acceso Empresa -->
+    <div id="empresa-modal" class="login-modal">
+        <div class="login-card">
+            <button class="close-login" onclick="closeEmpresaModal()">&times;</button>
+            <div class="login-header">
+                <img src="img/logo-app.png" alt="Logo D">
+                <h2>Acceso Empresa</h2>
+                <p>Ingresa tus credenciales para continuar</p>
+            </div>
+            <form class="login-form" onsubmit="loginEmpresa(event)">
+                <input type="text" id="empresa-email" placeholder="Usuario" required />
+                <input type="password" id="empresa-password" placeholder="Contraseña" required />
+                <p id="empresa-error" class="error-message"></p>
+                <button type="submit">Ingresar</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
