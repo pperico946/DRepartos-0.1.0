@@ -152,7 +152,7 @@ function goTo(path) {
 // Redirección por rol
   if (data.rol === "admin") {
       localStorage.setItem("admin_token", data.token);
-      goTo("admin.html");
+      window.location.href = `${BACKEND_URL}/admin.html`;
 } else if (data.rol === "empleado") {
       localStorage.setItem("empleado_token", data.token);
       goTo("empleado.html");
