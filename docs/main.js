@@ -135,19 +135,34 @@ async function loginEmpresa(event) {
       return;
     }
 
-    // Guardar token según rol y redirigir correctamente en GitHub Pages
-    if (data.rol === "admin") {
+    // Detectar base path automáticamente (GitHub Pages compatible)
+const basePath = window.location.pathname.includes(".github.io")
+  ? window.location.pathname.split("/")[1]
+  : "";
+
+// Construir ruta correcta
+function goTo(path) {
+  if (basePath) {
+    window.location.href = `/${basePath}/${path}`;
+  } else {
+    window.location.href = `/${path}`;
+  }
+}
+
+// Redirección por rol
+  if (data.rol === "admin") {
       localStorage.setItem("admin_token", data.token);
-      window.location.href = "admin.html";
-    } else if (data.rol === "empleado") {
+      goTo("admin.html");
+} else if (data.rol === "empleado") {
       localStorage.setItem("empleado_token", data.token);
-      window.location.href = "empleado.html";
-    } else if (data.rol === "cliente") {
+      goTo("empleado.html");
+} else if (data.rol === "cliente") {
       localStorage.setItem("cliente_token", data.token);
-      window.location.href = "app/index.html";
-    } else {
+      goTo("app/index.html");
+} else {
       errorEl.textContent = "Acceso no autorizado";
-    }
+}
+
   } catch (err) {
     console.error(err);
     errorEl.textContent = "Error conectando con el servidor";
