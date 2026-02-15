@@ -3,6 +3,15 @@
 ========================= */
 
 /* ----------------------
+   BACKEND DINÁMICO
+---------------------- */
+const BACKEND_URL =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? "http://localhost:3003"
+    : "https://drepartos.onrender.com";
+
+/* ----------------------
    VARIABLES GLOBALES
 ---------------------- */
 const loginForm = document.querySelector(".login-form");
@@ -46,11 +55,15 @@ document.addEventListener("DOMContentLoaded", () => {
     themeText.textContent = "Oscuro";
   }
 
-  // Redirigir automáticamente según token y rol
-  const token = localStorage.getItem("admin_token") || localStorage.getItem("empleado_token") || localStorage.getItem("cliente_token");
+  // Validar token contra backend (no contra la ruta local)
+  const token =
+    localStorage.getItem("admin_token") ||
+    localStorage.getItem("empleado_token") ||
+    localStorage.getItem("cliente_token");
+
   if (!token) return;
 
-  fetch(window.location.pathname, {
+  fetch(`${BACKEND_URL}/api/verify`, {
     headers: { Authorization: token }
   }).then((res) => {
     if (res.status === 403 || res.status === 401) {
@@ -58,6 +71,8 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.removeItem("empleado_token");
       localStorage.removeItem("cliente_token");
     }
+  }).catch(() => {
+    console.log("No se pudo verificar token");
   });
 });
 
@@ -66,9 +81,9 @@ document.addEventListener("DOMContentLoaded", () => {
 ---------------------- */
 window.addEventListener("scroll", () => {
   if (window.scrollY > 50) {
-    navbar.classList.add("scrolled");
+    navbar?.classList.add("scrolled");
   } else {
-    navbar.classList.remove("scrolled");
+    navbar?.classList.remove("scrolled");
   }
 });
 
@@ -107,9 +122,7 @@ async function loginEmpresa(event) {
   }
 
   try {
-    const backendURL = "https://drepartos.onrender.com";
-
-    const res = await fetch(`${backendURL}/api/login`, {
+    const res = await fetch(`${BACKEND_URL}/api/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
@@ -122,16 +135,16 @@ async function loginEmpresa(event) {
       return;
     }
 
-    // Guardar token según rol y redirigir
+    // Guardar token según rol y redirigir correctamente en GitHub Pages
     if (data.rol === "admin") {
       localStorage.setItem("admin_token", data.token);
-      window.location.href = "/admin.html";
+      window.location.href = "admin.html";
     } else if (data.rol === "empleado") {
       localStorage.setItem("empleado_token", data.token);
-      window.location.href = "/empleado.html";
+      window.location.href = "empleado.html";
     } else if (data.rol === "cliente") {
       localStorage.setItem("cliente_token", data.token);
-      window.location.href = "/app/index.html";
+      window.location.href = "app/index.html";
     } else {
       errorEl.textContent = "Acceso no autorizado";
     }
@@ -158,7 +171,11 @@ if (empresaBtn) {
 /* ----------------------
    SCROLL ANIMATIONS
 ---------------------- */
-const observerOptions = { threshold: 0.1, rootMargin: "0px 0px -100px 0px" };
+const observerOptions = {
+  threshold: 0.1,
+  rootMargin: "0px 0px -100px 0px"
+};
+
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) entry.target.classList.add("visible");
@@ -166,7 +183,9 @@ const observer = new IntersectionObserver((entries) => {
 }, observerOptions);
 
 document.addEventListener("DOMContentLoaded", () => {
-  const fadeElements = document.querySelectorAll(".feature-card, .partner-card, .roadmap-item");
+  const fadeElements = document.querySelectorAll(
+    ".feature-card, .partner-card, .roadmap-item"
+  );
   fadeElements.forEach((el) => {
     el.classList.add("fade-in");
     observer.observe(el);
@@ -180,6 +199,7 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
   anchor.addEventListener("click", function (e) {
     e.preventDefault();
     const target = document.querySelector(this.getAttribute("href"));
-    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (target)
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 });
