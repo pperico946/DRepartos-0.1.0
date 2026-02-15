@@ -837,3 +837,13 @@ footer {
     opacity: 1;
     transform: translateY(0);
 }
+
+/* =========================
+   TAG 'En proceso' PARA ROADMAP
+========================= */
+.feature-tag.in-process {
+    background: rgba(59, 130, 246, 0.2); /* azul suave */
+    color: #3b82f6; /* texto azul */
+    border-color: #3b82f6; /* borde azul */
+    font-weight: 600;
+}
