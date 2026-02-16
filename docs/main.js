@@ -12,6 +12,11 @@ const BACKEND_URL =
     : "https://drepartos.onrender.com";
 
 /* ----------------------
+   🔐 API KEY
+---------------------- */
+const API_KEY = "DRepartos090399202687yu654op987xyz";
+
+/* ----------------------
    VARIABLES GLOBALES
 ---------------------- */
 const loginForm = document.querySelector(".login-form");
@@ -40,7 +45,9 @@ function toggleTheme() {
   }
 }
 
-// Load saved theme
+/* ----------------------
+   LOAD SAVED THEME + VERIFY TOKEN
+---------------------- */
 document.addEventListener("DOMContentLoaded", () => {
   const savedTheme = localStorage.getItem("theme") || "dark";
   document.body.setAttribute("data-theme", savedTheme);
@@ -55,7 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
     themeText.textContent = "Oscuro";
   }
 
-  // Validar token contra backend (no contra la ruta local)
   const token =
     localStorage.getItem("admin_token") ||
     localStorage.getItem("empleado_token") ||
@@ -64,18 +70,22 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!token) return;
 
   fetch(`${BACKEND_URL}/api/verify`, {
-  headers: { 
-    "Authorization": `Bearer ${token}` 
-  }
-}).then((res) => {
-    if (res.status === 403 || res.status === 401) {
-      localStorage.removeItem("admin_token");
-      localStorage.removeItem("empleado_token");
-      localStorage.removeItem("cliente_token");
-    }
-  }).catch(() => {
-    console.log("No se pudo verificar token");
-  });
+    headers: { 
+      "Authorization": `Bearer ${token}`,
+      "x-api-key": API_KEY
+    },
+  })
+    .then((res) => {
+      if (res.status === 403 || res.status === 401) {
+        localStorage.removeItem("admin_token");
+        localStorage.removeItem("empleado_token");
+        localStorage.removeItem("cliente_token");
+        console.log("Token inválido o expirado");
+      }
+    })
+    .catch(() => {
+      console.log("No se pudo verificar token");
+    });
 });
 
 /* ----------------------
@@ -102,7 +112,6 @@ function closeEmpresaModal() {
   if (errorEl) errorEl.textContent = "";
 }
 
-// Close modal when clicking outside
 window.addEventListener("click", (event) => {
   const modal = document.getElementById("empresa-modal");
   if (event.target === modal) closeEmpresaModal();
@@ -126,8 +135,11 @@ async function loginEmpresa(event) {
   try {
     const res = await fetch(`${BACKEND_URL}/api/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
+      headers: { 
+        "Content-Type": "application/json",
+        "x-api-key": API_KEY
+      },
+      body: JSON.stringify({ email, password }),
     });
 
     const data = await res.json();
@@ -137,34 +149,19 @@ async function loginEmpresa(event) {
       return;
     }
 
-    // Detectar base path automáticamente (GitHub Pages compatible)
-const basePath = window.location.pathname.includes(".github.io")
-  ? window.location.pathname.split("/")[1]
-  : "";
-
-// Construir ruta correcta
-function goTo(path) {
-  if (basePath) {
-    window.location.href = `/${basePath}/${path}`;
-  } else {
-    window.location.href = `/${path}`;
-  }
-}
-
-// Redirección por rol
-  if (data.rol === "admin") {
+    // Guardar token seguro en localStorage y redirigir según rol
+    if (data.rol === "admin") {
       localStorage.setItem("admin_token", data.token);
       window.location.href = `${BACKEND_URL}/admin.html`;
-} else if (data.rol === "empleado") {
+    } else if (data.rol === "empleado") {
       localStorage.setItem("empleado_token", data.token);
-      goTo("empleado.html");
-} else if (data.rol === "cliente") {
+      window.location.href = `${BACKEND_URL}/empleado.html`;
+    } else if (data.rol === "cliente") {
       localStorage.setItem("cliente_token", data.token);
-      goTo("app/index.html");
-} else {
+      window.location.href = `${BACKEND_URL}/app/index.html`;
+    } else {
       errorEl.textContent = "Acceso no autorizado";
-}
-
+    }
   } catch (err) {
     console.error(err);
     errorEl.textContent = "Error conectando con el servidor";
@@ -190,7 +187,7 @@ if (empresaBtn) {
 ---------------------- */
 const observerOptions = {
   threshold: 0.1,
-  rootMargin: "0px 0px -100px 0px"
+  rootMargin: "0px 0px -100px 0px",
 };
 
 const observer = new IntersectionObserver((entries) => {
