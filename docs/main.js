@@ -64,7 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const token =
     localStorage.getItem("empleado_token") ||
-    localStorage.getItem("cliente_token");
+    localStorage.getItem("cliente_token") ||
+    localStorage.getItem("admin_token");
 
   if (!token) return;
 
@@ -139,6 +140,7 @@ async function loginEmpresa(event) {
         "x-api-key": API_KEY
       },
       body: JSON.stringify({ email, password }),
+      credentials: "include" // ✅ Incluye cookies para admin
     });
 
     const data = await res.json();
@@ -150,6 +152,7 @@ async function loginEmpresa(event) {
 
     // Guardar token seguro en localStorage y redirigir según rol
     if (data.rol === "admin") {
+      localStorage.setItem("admin_token", data.token); // Para redirecciones con token
       window.location.href = `${BACKEND_URL}/admin.html`;
     } else if (data.rol === "empleado") {
       localStorage.setItem("empleado_token", data.token);
