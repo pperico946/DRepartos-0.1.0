@@ -26,7 +26,6 @@ const navbar = document.getElementById("navbar");
 /* =========================
    🔐 UTILIDADES AUTH
 ========================= */
-
 function getStoredToken() {
   return (
     localStorage.getItem("admin_token") ||
@@ -43,15 +42,8 @@ function clearTokens() {
 
 function getAuthHeaders() {
   const token = getStoredToken();
-
-  const headers = {
-    "x-api-key": API_KEY
-  };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
+  const headers = { "x-api-key": API_KEY };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
   return headers;
 }
 
@@ -183,7 +175,7 @@ async function loginEmpresa(event) {
     } 
     else if (data.rol === "empleado") {
       localStorage.setItem("empleado_token", data.token);
-      window.location.href = "empleado.html";
+      window.location.href = "/empleado.html";
     } 
     else if (data.rol === "cliente") {
       localStorage.setItem("cliente_token", data.token);
