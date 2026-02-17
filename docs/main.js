@@ -179,7 +179,7 @@ async function loginEmpresa(event) {
     // Guardar token según rol
     if (data.rol === "admin") {
       localStorage.setItem("admin_token", data.token);
-      window.location.href = "admin.html";
+      window.location.href = "/private/admin.html";
     } 
     else if (data.rol === "empleado") {
       localStorage.setItem("empleado_token", data.token);
