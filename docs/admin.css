@@ -1,0 +1,239 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  display: flex;
+  min-height: 100vh;
+  background-color: #121d2b;
+  color: #ffffff;
+  overflow-x: hidden; /* evita scroll horizontal */
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background-color: #0d1520;
+  min-height: 100vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0; /* no se reduce en pantallas pequeñas */
+}
+
+.sidebar .logo {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.sidebar .logo img {
+  width: 60px;
+}
+
+.sidebar nav ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.sidebar nav ul li {
+  padding: 12px 0;
+  cursor: pointer;
+  color: #a0aec0;
+  transition: 0.2s;
+}
+
+.sidebar nav ul li.active,
+.sidebar nav ul li:hover {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+/* Main content */
+.main-content {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto; /* scroll si el contenido es largo */
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap; /* para que se ajuste en pantallas pequeñas */
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.panel-fecha-hora {
+  background-color: #1b2a3b;
+  padding: 12px 20px;
+  border-radius: 10px;
+  text-align: right;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  color: #ffffff;
+  min-width: 180px;
+}
+
+.panel-fecha-hora .fecha {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.panel-fecha-hora #diaNumero {
+  font-weight: bold;
+  font-size: 20px;
+  margin-right: 5px;
+}
+
+.panel-fecha-hora #diaSemana,
+.panel-fecha-hora #mes {
+  font-size: 14px;
+  margin-right: 3px;
+}
+
+.panel-fecha-hora .hora {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Tarjetas */
+.tarjetas {
+  display: flex;
+  flex-wrap: wrap; /* se adaptan a pantallas pequeñas */
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.tarjeta {
+  flex: 1 1 200px; /* ancho mínimo 200px y se expande */
+  background-color: #1b2a3b;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+}
+
+.tarjeta p {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.tarjeta span {
+  font-size: 14px;
+  color: #a0aec0;
+}
+
+.tarjeta.total { background-color: #1b2a3b; color: #ffffff; }
+.tarjeta.recibido { background-color: #144d21; color: #38b000; }
+.tarjeta.preparacion { background-color: #4a3e0d; color: #fbbf24; }
+.tarjeta.listo { background-color: #1c2f4d; color: #3b82f6; }
+
+/* Filtros */
+.filtros {
+  margin-bottom: 20px;
+}
+
+.filtros label {
+  margin-right: 10px;
+}
+
+.filtros select {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #1b2a3b;
+  color: #ffffff;
+}
+
+/* Tabla de pedidos */
+.tabla-container {
+  overflow-x: auto; /* permite scroll horizontal si es necesario */
+}
+
+.tabla-container table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #1b2a3b;
+  border-radius: 8px;
+  overflow: hidden;
+  min-width: 600px; /* evita que se colapse demasiado */
+}
+
+.tabla-container th, .tabla-container td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #0d1520;
+}
+
+/* Texto original y pedido final más legible */
+.texto-original {
+  white-space: pre-wrap;     
+  word-break: break-word;     
+  overflow-wrap: break-word;  
+  line-height: 1.4;           
+  max-width: 400px;           
+  color: #ffffff;
+}
+
+
+.tabla-container th {
+  background-color: #0d1520;
+  color: #a0aec0;
+}
+
+.tabla-container tr.recibido { background-color: rgba(56, 176, 0, 0.1); }
+.tabla-container tr.preparacion { background-color: rgba(251, 191, 36, 0.1); }
+.tabla-container tr.listo { background-color: rgba(59, 130, 246, 0.1); }
+
+.tabla-container button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #e53e3e;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.tabla-container button:hover {
+  background-color: #c53030;
+}
+
+.tabla-container select {
+  padding: 5px;
+  border-radius: 5px;
+  border: none;
+  background-color: #0d1520;
+  color: #fff;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 60px; /* colapsa sidebar */
+    padding: 10px;
+  }
+
+  .sidebar nav ul li {
+    font-size: 12px;
+    padding: 8px 0;
+  }
+
+  .tarjetas {
+    flex-direction: column;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
