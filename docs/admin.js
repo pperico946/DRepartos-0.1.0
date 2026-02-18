@@ -34,9 +34,7 @@ if (!adminToken) {
   cerrarSesion();
 }
 
-/* =========================
-   FORZAR TOKEN EN CSS / JS / IMÁGENES
-========================= */
+
 document.addEventListener("DOMContentLoaded", () => {
   // Añadir token al CSS si no lo tiene
   document.querySelectorAll("link[rel='stylesheet']").forEach(link => {
@@ -71,7 +69,6 @@ async function fetchSeguro(url, options = {}) {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": API_KEY,
       "Authorization": `Bearer ${adminToken}`,
       ...(options.headers || {})
     }
