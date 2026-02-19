@@ -69,10 +69,11 @@ body {
   pointer-events: none;
 }
 
+/* Logo de la empresa (arriba) */
 .sidebar .logo {
   text-align: center;
-  margin-bottom: 3rem;
-  padding-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
   border-bottom: 1px solid var(--border-color);
   position: relative;
   z-index: 1;
@@ -90,14 +91,41 @@ body {
   transform: scale(1.05);
 }
 
-.sidebar .logo-text {
-  margin-top: 1rem;
-  font-size: 1.2rem;
+/* Logo y nombre de DRepartos (debajo del logo empresa) */
+.brand-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+  z-index: 1;
+}
+
+.brand-logo .app-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 10px rgba(0, 180, 216, 0.3));
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.brand-logo .app-logo:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.brand-logo .logo-text {
+  font-size: 1.3rem;
   font-weight: 700;
   background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  white-space: nowrap;
+  line-height: 1;
 }
 
 .sidebar nav {
@@ -554,13 +582,31 @@ body {
     padding: 1.5rem 0.8rem;
   }
 
+  .sidebar .logo {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+  }
+
   .sidebar .logo img {
     width: 50px;
     height: 50px;
   }
 
-  .sidebar .logo-text {
-    display: none;
+  .brand-logo {
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .brand-logo .app-logo {
+    width: 35px;
+    height: 35px;
+  }
+
+  .brand-logo .logo-text {
+    font-size: 0.75rem;
+    text-align: center;
   }
 
   .sidebar nav ul li {
@@ -569,7 +615,7 @@ body {
     font-size: 0.85rem;
   }
 
-  .sidebar nav ul li span {
+  .sidebar nav ul li span:last-child {
     display: none;
   }
 
@@ -599,6 +645,20 @@ body {
 
   .sidebar.open {
     left: 0;
+  }
+
+  .brand-logo {
+    flex-direction: row;
+    gap: 0.6rem;
+  }
+
+  .brand-logo .app-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .brand-logo .logo-text {
+    font-size: 1.3rem;
   }
 
   .main-content {
