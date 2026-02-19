@@ -8,7 +8,7 @@ const BACKEND_URL =
     : "https://drepartos.onrender.com";
 
 /* =========================
-   TOKEN DESDE URL (IMPORTANTE)
+   TOKEN DESDE URL
 ========================= */
 const urlParams = new URLSearchParams(window.location.search);
 const tokenFromUrl = urlParams.get("token");
@@ -26,24 +26,32 @@ function cerrarSesion() {
   window.location.href = "/";
 }
 
-if (!adminToken) {
-  cerrarSesion();
-}
+if (!adminToken) cerrarSesion();
 
-
+/* =========================
+   DOM READY
+========================= */
 document.addEventListener("DOMContentLoaded", () => {
-  // Añadir token al CSS si no lo tiene
+
+  // Añadir token al CSS
   document.querySelectorAll("link[rel='stylesheet']").forEach(link => {
     if (!link.href.includes("token=")) {
       link.href = link.href.split("?")[0] + `?token=${adminToken}`;
     }
   });
 
-  // Añadir token al logo si existe
+  // Logo empresa
   const empresaLogo = document.getElementById("empresa-logo");
   if (empresaLogo && empresaLogo.src && !empresaLogo.src.includes("token=")) {
     empresaLogo.src = empresaLogo.src.split("?")[0] + `?token=${adminToken}`;
   }
+
+  // Botón crear cliente (SIN inline JS)
+  const btnCrear = document.getElementById("btnCrearCliente");
+  if (btnCrear) {
+    btnCrear.addEventListener("click", crearCliente);
+  }
+
 });
 
 /* =========================
@@ -55,12 +63,11 @@ const recibidosEl = document.getElementById("recibidos");
 const preparacionEl = document.getElementById("preparacion");
 const listosEl = document.getElementById("listos");
 const estadoFiltro = document.getElementById("estadoFiltro");
-const empresaLogo = document.getElementById("empresa-logo");
 const clientesContainer = document.getElementById("clientesContainer");
-const clienteDetalleContainer = document.getElementById("clienteDetalleContainer");
+const clienteDetalleContainer = document.getElementById("clienteDetalle"); // ✅ FIX AQUÍ
 
 /* =========================
-   HELPER FETCH SEGURO
+   FETCH SEGURO
 ========================= */
 async function fetchSeguro(url, options = {}) {
   const config = {
@@ -83,22 +90,6 @@ async function fetchSeguro(url, options = {}) {
 }
 
 /* =========================
-   CONFIGURAR UI EMPRESA
-========================= */
-if (adminData?.empresa) {
-  if (empresaLogo) {
-    empresaLogo.src =
-      (adminData.empresa.logo_url || "logo-empresa.png") +
-      `?token=${adminToken}`;
-  }
-
-  document.body.style.setProperty(
-    "--color-primario",
-    adminData.empresa.color_primario || "#1e40af"
-  );
-}
-
-/* =========================
    FECHA Y HORA
 ========================= */
 function actualizarPanelFechaHora() {
@@ -106,18 +97,13 @@ function actualizarPanelFechaHora() {
   const diasSemana = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
   const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
-  const diaNumero = String(now.getDate()).padStart(2,"0");
-  const diaSemana = diasSemana[now.getDay()];
-  const mes = meses[now.getMonth()];
-  const hora =
+  document.getElementById("diaNumero").textContent = String(now.getDate()).padStart(2,"0");
+  document.getElementById("diaSemana").textContent = diasSemana[now.getDay()];
+  document.getElementById("mes").textContent = meses[now.getMonth()];
+  document.getElementById("horaActual").textContent =
     String(now.getHours()).padStart(2,"0") + ":" +
     String(now.getMinutes()).padStart(2,"0") + ":" +
     String(now.getSeconds()).padStart(2,"0");
-
-  document.getElementById("diaNumero").textContent = diaNumero;
-  document.getElementById("diaSemana").textContent = diaSemana;
-  document.getElementById("mes").textContent = mes;
-  document.getElementById("horaActual").textContent = hora;
 }
 
 setInterval(actualizarPanelFechaHora, 1000);
@@ -134,7 +120,8 @@ function formatFecha(fechaStr) {
    RENDER TABLA PEDIDOS
 ========================= */
 function renderTablaPedidos(pedidos) {
-  if (!pedidos || pedidos.length === 0) {
+
+  if (!Array.isArray(pedidos) || pedidos.length === 0) {
     listaPedidosTabla.innerHTML = "<p>No hay pedidos</p>";
     return;
   }
@@ -179,45 +166,14 @@ function renderTablaPedidos(pedidos) {
 
   html += `</tbody></table>`;
   listaPedidosTabla.innerHTML = html;
-
-  document.querySelectorAll(".estado-select").forEach(select => {
-    select.addEventListener("change", async () => {
-      try {
-        await fetchSeguro(
-          `${BACKEND_URL}/api/admin/pedidos/${select.dataset.id}`,
-          {
-            method: "PATCH",
-            body: JSON.stringify({ estado: select.value })
-          }
-        );
-        cargarPedidos();
-      } catch (err) {
-        console.error(err);
-      }
-    });
-  });
-
-  document.querySelectorAll(".btn-eliminar").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      if (!confirm("¿Deseas eliminar este pedido?")) return;
-
-      try {
-        await fetchSeguro(
-          `${BACKEND_URL}/api/admin/pedidos/${btn.dataset.id}`,
-          { method: "DELETE" }
-        );
-        cargarPedidos();
-      } catch (err) {
-        console.error(err);
-      }
-    });
-  });
 }
 
 /* =========================
    TARJETAS RESUMEN
 ========================= */
 function actualizarTarjetas(pedidos) {
+  if (!Array.isArray(pedidos)) return;
+
   totalPedidosEl.textContent = pedidos.length;
   recibidosEl.textContent = pedidos.filter(p => p.estado === "recibido").length;
   preparacionEl.textContent = pedidos.filter(p => p.estado === "procesando").length;
@@ -229,20 +185,17 @@ function actualizarTarjetas(pedidos) {
 ========================= */
 async function cargarPedidos() {
   try {
-    if (!adminData?.empresa?.id) {
-      cerrarSesion();
-      return;
-    }
-
-    const params = new URLSearchParams({
-      empresaId: adminData.empresa.id
-    });
+    if (!adminData?.empresa?.id) return cerrarSesion();
 
     const res = await fetchSeguro(
-      `${BACKEND_URL}/api/admin/pedidos?${params}`
+      `${BACKEND_URL}/api/admin/pedidos?empresaId=${adminData.empresa.id}`
     );
 
+    if (!res.ok) throw new Error("Error servidor pedidos");
+
     const pedidos = await res.json();
+
+    if (!Array.isArray(pedidos)) return;
 
     const filtro = estadoFiltro?.value;
     const pedidosFiltrados =
@@ -265,69 +218,91 @@ estadoFiltro?.addEventListener("change", cargarPedidos);
    CARGAR CLIENTES
 ========================= */
 async function cargarClientes() {
-  const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes`);
-  const clientes = await res.json();
+  try {
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes`);
 
-  const contenedor = document.getElementById("clientesContainer");
-  const totalClientesEl = document.getElementById("totalClientes");
+    if (!res.ok) throw new Error("Error servidor clientes");
 
-  totalClientesEl.textContent = clientes.length;
+    const clientes = await res.json();
 
-  if (!clientes.length) {
-    contenedor.innerHTML = "<p>No hay clientes registrados</p>";
-    return;
-  }
+    if (!Array.isArray(clientes)) {
+      console.error("Clientes no es array:", clientes);
+      clientesContainer.innerHTML = "<p>Error cargando clientes</p>";
+      return;
+    }
 
-  contenedor.innerHTML = clientes.map(c => `
-    <div class="cliente-card" data-id="${c.id}">
-      <h3>${c.nombre}</h3>
-      <p>Email: ${c.usuario?.email || '-'}</p>
-      <p>Tel: ${c.telefono || '-'}</p>
-      <p>Ref: ${c.ref_code || '-'}</p>
-    </div>
-  `).join("");
+    if (!clientes.length) {
+      clientesContainer.innerHTML = "<p>No hay clientes registrados</p>";
+      return;
+    }
 
-  document.querySelectorAll(".cliente-card").forEach(card => {
-    card.addEventListener("click", () => {
-      abrirVistaCliente(card.dataset.id);
+    clientesContainer.innerHTML = clientes.map(c => `
+      <div class="cliente-card" data-id="${c.id}">
+        <h3>${c.nombre}</h3>
+        <p>Email: ${c.usuario?.email || '-'}</p>
+        <p>Tel: ${c.telefono || '-'}</p>
+        <p>Ref: ${c.ref_code || '-'}</p>
+      </div>
+    `).join("");
+
+    document.querySelectorAll(".cliente-card").forEach(card => {
+      card.addEventListener("click", () => {
+        abrirVistaCliente(card.dataset.id);
+      });
     });
-  });
+
+  } catch (err) {
+    console.error("Error cargando clientes:", err);
+    clientesContainer.innerHTML = "<p>Error cargando clientes</p>";
+  }
 }
-
-
-function crearCliente() {
-  alert("Aquí abrirá el formulario para crear cliente (lo implementamos ahora si quieres)");
-}
-
 
 /* =========================
-   VISTA DETALLE CLIENTE
+   CREAR CLIENTE
+========================= */
+function crearCliente() {
+  alert("Formulario crear cliente (lo implementamos después si quieres)");
+}
+
+/* =========================
+   DETALLE CLIENTE
 ========================= */
 async function abrirVistaCliente(clienteId) {
   try {
     const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes/${clienteId}`);
+
+    if (!res.ok) throw new Error("Error detalle cliente");
+
     const cliente = await res.json();
 
-    // Historial de pedidos del cliente
-    const pedidosRes = await fetchSeguro(`${BACKEND_URL}/api/admin/pedidos?empresaId=${adminData.empresa.id}&rol=cliente&usuarioId=${cliente.usuario_id}`);
+    const pedidosRes = await fetchSeguro(
+      `${BACKEND_URL}/api/admin/pedidos?empresaId=${adminData.empresa.id}&usuarioId=${cliente.usuario_id}`
+    );
+
     const pedidos = await pedidosRes.json();
 
     clienteDetalleContainer.innerHTML = `
       <div class="cliente-detalle">
         <h2>${cliente.nombre}</h2>
-        <img src="${cliente.empresa.logo_url || 'logo-empresa.png'}" class="cliente-logo-detalle"/>
-        <p>Email: ${cliente.usuario.email}</p>
+        <p>Email: ${cliente.usuario?.email || '-'}</p>
         <p>Tel: ${cliente.telefono || '-'}</p>
-        <p>Ref: ${cliente.ref_code}</p>
+        <p>Ref: ${cliente.ref_code || '-'}</p>
         ${cliente.notas ? `<p>Notas: ${cliente.notas}</p>` : ''}
         <h3>Historial de Pedidos</h3>
         <ul>
-          ${pedidos.map(p => `<li>${formatFecha(p.fecha)} - ${p.pedido_final} [${p.estado}]</li>`).join('')}
+          ${
+            Array.isArray(pedidos)
+              ? pedidos.map(p =>
+                  `<li>${formatFecha(p.fecha)} - ${p.pedido_final} [${p.estado}]</li>`
+                ).join('')
+              : "<li>No hay pedidos</li>"
+          }
         </ul>
       </div>
     `;
+
   } catch (err) {
-    console.error("Error cargando detalle cliente:", err);
+    console.error("Error detalle cliente:", err);
     clienteDetalleContainer.innerHTML = "<p>Error cargando información del cliente</p>";
   }
 }
@@ -338,6 +313,5 @@ async function abrirVistaCliente(clienteId) {
 cargarPedidos();
 setInterval(cargarPedidos, 10000);
 
-// Cargar clientes al inicio
 cargarClientes();
-setInterval(cargarClientes, 15000); // cada 15 segundos
+setInterval(cargarClientes, 15000);
