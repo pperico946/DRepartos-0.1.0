@@ -308,6 +308,42 @@ async function abrirVistaCliente(clienteId) {
 }
 
 /* =========================
+   NAVEGACIÓN SIDEBAR
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+
+  const menuItems = document.querySelectorAll(".sidebar nav ul li");
+  const seccionPedidos = document.getElementById("seccionPedidos");
+  const seccionClientes = document.getElementById("seccionClientes");
+  const mainTitle = document.getElementById("mainTitle");
+
+  menuItems.forEach(item => {
+    item.addEventListener("click", () => {
+
+      menuItems.forEach(i => i.classList.remove("active"));
+      item.classList.add("active");
+
+      const seccion = item.dataset.seccion;
+
+      if (seccion === "pedidos") {
+        seccionPedidos.style.display = "block";
+        seccionClientes.style.display = "none";
+        mainTitle.innerHTML = "📦 Gestión de Pedidos";
+      }
+
+      if (seccion === "clientes") {
+        seccionPedidos.style.display = "none";
+        seccionClientes.style.display = "block";
+        mainTitle.innerHTML = "👥 Gestión de Clientes";
+      }
+
+    });
+  });
+
+});
+
+
+/* =========================
    INICIALIZAR
 ========================= */
 cargarPedidos();
