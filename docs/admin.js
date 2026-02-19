@@ -9,8 +9,6 @@ const BACKEND_URL =
     ? "http://localhost:3003"
     : "https://drepartos.onrender.com";
 
-/* 🔐 API KEY */
-
 /* =========================
    TOKEN DESDE URL (IMPORTANTE)
 ========================= */
