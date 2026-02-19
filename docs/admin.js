@@ -1,5 +1,3 @@
-// admin.js
-
 /* =========================
    CONFIGURACIÓN BACKEND
 ========================= */
@@ -58,6 +56,8 @@ const preparacionEl = document.getElementById("preparacion");
 const listosEl = document.getElementById("listos");
 const estadoFiltro = document.getElementById("estadoFiltro");
 const empresaLogo = document.getElementById("empresa-logo");
+const clientesContainer = document.getElementById("clientesContainer");
+const clienteDetalleContainer = document.getElementById("clienteDetalleContainer");
 
 /* =========================
    HELPER FETCH SEGURO
@@ -131,7 +131,7 @@ function formatFecha(fechaStr) {
 }
 
 /* =========================
-   RENDER TABLA
+   RENDER TABLA PEDIDOS
 ========================= */
 function renderTablaPedidos(pedidos) {
   if (!pedidos || pedidos.length === 0) {
@@ -262,7 +262,67 @@ async function cargarPedidos() {
 estadoFiltro?.addEventListener("change", cargarPedidos);
 
 /* =========================
+   CARGAR CLIENTES
+========================= */
+async function cargarClientes() {
+  const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes`);
+  const clientes = await res.json();
+
+  clientesContainer.innerHTML = clientes.map(c => `
+    <div class="cliente-card" data-id="${c.id}">
+      <img src="${c.empresa.logo_url || 'logo-empresa.png'}" class="cliente-logo"/>
+      <h3>${c.nombre}</h3>
+      <p>Email: ${c.usuario.email}</p>
+      <p>Tel: ${c.telefono || '-'}</p>
+      <p>Ref: ${c.ref_code}</p>
+    </div>
+  `).join("");
+
+  document.querySelectorAll(".cliente-card").forEach(card => {
+    card.addEventListener("click", () => {
+      abrirVistaCliente(card.dataset.id);
+    });
+  });
+}
+
+/* =========================
+   VISTA DETALLE CLIENTE
+========================= */
+async function abrirVistaCliente(clienteId) {
+  try {
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes/${clienteId}`);
+    const cliente = await res.json();
+
+    // Historial de pedidos del cliente
+    const pedidosRes = await fetchSeguro(`${BACKEND_URL}/api/admin/pedidos?empresaId=${adminData.empresa.id}&rol=cliente&usuarioId=${cliente.usuario_id}`);
+    const pedidos = await pedidosRes.json();
+
+    clienteDetalleContainer.innerHTML = `
+      <div class="cliente-detalle">
+        <h2>${cliente.nombre}</h2>
+        <img src="${cliente.empresa.logo_url || 'logo-empresa.png'}" class="cliente-logo-detalle"/>
+        <p>Email: ${cliente.usuario.email}</p>
+        <p>Tel: ${cliente.telefono || '-'}</p>
+        <p>Ref: ${cliente.ref_code}</p>
+        ${cliente.notas ? `<p>Notas: ${cliente.notas}</p>` : ''}
+        <h3>Historial de Pedidos</h3>
+        <ul>
+          ${pedidos.map(p => `<li>${formatFecha(p.fecha)} - ${p.pedido_final} [${p.estado}]</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  } catch (err) {
+    console.error("Error cargando detalle cliente:", err);
+    clienteDetalleContainer.innerHTML = "<p>Error cargando información del cliente</p>";
+  }
+}
+
+/* =========================
    INICIALIZAR
 ========================= */
 cargarPedidos();
 setInterval(cargarPedidos, 10000);
+
+// Cargar clientes al inicio
+cargarClientes();
+setInterval(cargarClientes, 15000); // cada 15 segundos
