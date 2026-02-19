@@ -268,13 +268,22 @@ async function cargarClientes() {
   const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes`);
   const clientes = await res.json();
 
-  clientesContainer.innerHTML = clientes.map(c => `
+  const contenedor = document.getElementById("clientesContainer");
+  const totalClientesEl = document.getElementById("totalClientes");
+
+  totalClientesEl.textContent = clientes.length;
+
+  if (!clientes.length) {
+    contenedor.innerHTML = "<p>No hay clientes registrados</p>";
+    return;
+  }
+
+  contenedor.innerHTML = clientes.map(c => `
     <div class="cliente-card" data-id="${c.id}">
-      <img src="${c.empresa.logo_url || 'logo-empresa.png'}" class="cliente-logo"/>
       <h3>${c.nombre}</h3>
-      <p>Email: ${c.usuario.email}</p>
+      <p>Email: ${c.usuario?.email || '-'}</p>
       <p>Tel: ${c.telefono || '-'}</p>
-      <p>Ref: ${c.ref_code}</p>
+      <p>Ref: ${c.ref_code || '-'}</p>
     </div>
   `).join("");
 
@@ -284,6 +293,12 @@ async function cargarClientes() {
     });
   });
 }
+
+
+function crearCliente() {
+  alert("Aquí abrirá el formulario para crear cliente (lo implementamos ahora si quieres)");
+}
+
 
 /* =========================
    VISTA DETALLE CLIENTE
