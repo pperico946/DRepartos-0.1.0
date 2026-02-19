@@ -27,7 +27,7 @@
                     <span>🏢</span>
                     <span>Acceso Empresa</span>
                 </button>
-                <button class="theme-toggle">
+                <button id="theme-toggle" class="theme-toggle">
                     <span id="theme-icon">☀️</span>
                     <span id="theme-text">Claro</span>
                 </button>
@@ -197,16 +197,15 @@
         </div>
     </footer>
 
-    <!-- Modal Acceso Empresa -->
     <div id="empresa-modal" class="login-modal">
         <div class="login-card">
-            <button class="close-login">&times;</button>
+            <button id="close-login" class="close-login">&times;</button>
             <div class="login-header">
                 <img src="img/logo-app.png" alt="Logo D">
                 <h2>Acceso Empresa</h2>
                 <p>Ingresa tus credenciales para continuar</p>
             </div>
-            <form class="login-form">
+            <form id="login-form" class="login-form">
                 <input type="text" id="empresa-email" placeholder="Usuario" required />
                 <input type="password" id="empresa-password" placeholder="Contraseña" required />
                 <p id="empresa-error" class="error-message"></p>

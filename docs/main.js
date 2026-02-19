@@ -115,13 +115,20 @@ async function loginEmpresa(event) {
       localStorage.setItem("admin_token", data.token);
       localStorage.setItem("usuario", JSON.stringify(data));
 
+      // Redirigir y cargar script privado dinámicamente
       const token = data.token;
       if (!token) {
         if (errorEl) errorEl.textContent = "Error obteniendo token";
         return;
       }
 
-      window.location.href = `${BACKEND_URL}/private/admin.html?token=${token}`;
+      // Si quieres cargar un JS privado solo para admin:
+      const script = document.createElement("script");
+      script.src = "/private/admin.js"; // ruta a tu JS privado
+      script.defer = true;
+      document.head.appendChild(script);
+
+      window.location.href = `/private/admin.html?token=${token}`;
     }
 
     else if (data.rol === "empleado") {
