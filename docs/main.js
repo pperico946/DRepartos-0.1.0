@@ -5,6 +5,7 @@
 /* ----------------------
    BACKEND DINÁMICO
 ---------------------- */
+// Siempre apuntando al backend real, aunque el frontend esté en GitHub Pages
 const BACKEND_URL =
   window.location.hostname === "localhost" ||
   window.location.hostname === "127.0.0.1"
@@ -51,13 +52,13 @@ function toggleTheme() {
 
   if (currentTheme === "light") {
     body.setAttribute("data-theme", "dark");
-    themeIcon.textContent = "☀️";
-    themeText.textContent = "Claro";
+    if (themeIcon) themeIcon.textContent = "☀️";
+    if (themeText) themeText.textContent = "Claro";
     localStorage.setItem("theme", "dark");
   } else {
     body.setAttribute("data-theme", "light");
-    themeIcon.textContent = "🌙";
-    themeText.textContent = "Oscuro";
+    if (themeIcon) themeIcon.textContent = "🌙";
+    if (themeText) themeText.textContent = "Oscuro";
     localStorage.setItem("theme", "light");
   }
 }
@@ -111,36 +112,30 @@ async function loginEmpresa(event) {
       return;
     }
 
+    // ========================
+    // REDIRECCIÓN SEGÚN ROL
+    // ========================
     if (data.rol === "admin") {
       localStorage.setItem("admin_token", data.token);
       localStorage.setItem("usuario", JSON.stringify(data));
 
-      // Redirigir y cargar script privado dinámicamente
       const token = data.token;
       if (!token) {
         if (errorEl) errorEl.textContent = "Error obteniendo token";
         return;
       }
 
-      // Si quieres cargar un JS privado solo para admin:
-      const script = document.createElement("script");
-      script.src = "/private/admin.js"; // ruta a tu JS privado
-      script.defer = true;
-      document.head.appendChild(script);
-
-      window.location.href = `/private/admin.html?token=${token}`;
-    }
-
+      // Redirige al backend privado para admin
+      window.location.href = `${BACKEND_URL}/private/admin.html?token=${token}`;
+    } 
     else if (data.rol === "empleado") {
       localStorage.setItem("empleado_token", data.token);
-      window.location.href = "/empleado.html";
-    }
-
+      window.location.href = `${BACKEND_URL}/private/empleado.html`;
+    } 
     else if (data.rol === "cliente") {
       localStorage.setItem("cliente_token", data.token);
-      window.location.href = "/app/index.html";
-    }
-
+      window.location.href = `${BACKEND_URL}/app/index.html`;
+    } 
     else {
       if (errorEl) errorEl.textContent = "Acceso no autorizado";
     }
@@ -156,12 +151,11 @@ async function loginEmpresa(event) {
    DOM READY
 ========================= */
 document.addEventListener("DOMContentLoaded", async () => {
-
   const navbar = document.getElementById("navbar");
   const empresaBtn = document.getElementById("empresa-btn");
   const themeToggleBtn = document.getElementById("theme-toggle");
   const closeLoginBtn = document.getElementById("close-login");
-  const loginForm = document.getElementById("login-form");
+  const loginForm = document.querySelector(".login-form");
 
   /* ---- Cargar tema guardado ---- */
   const savedTheme = localStorage.getItem("theme") || "dark";
@@ -169,7 +163,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const themeIcon = document.getElementById("theme-icon");
   const themeText = document.getElementById("theme-text");
-
   if (savedTheme === "dark") {
     if (themeIcon) themeIcon.textContent = "☀️";
     if (themeText) themeText.textContent = "Claro";
@@ -241,15 +234,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
     anchor.addEventListener("click", function (e) {
       e.preventDefault();
-      const target = document.querySelector(
-        this.getAttribute("href")
-      );
+      const target = document.querySelector(this.getAttribute("href"));
       if (target)
-        target.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   });
-
 });
