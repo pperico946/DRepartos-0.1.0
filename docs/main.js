@@ -131,7 +131,7 @@ async function loginEmpresa(event) {
     localStorage.setItem("admin_token", data.token);
     localStorage.setItem("usuario", JSON.stringify(data));
   // Redirigir SIN pasar token por URL
-    window.location.href = `${BACKEND_URL}/private/admin.html`;
+    window.location.href = "/private/admin.html";
   } else if (data.rol === "empleado") {
     localStorage.setItem("empleado_token", data.token);
     window.location.href = `${BACKEND_URL}/private/empleado.html`;

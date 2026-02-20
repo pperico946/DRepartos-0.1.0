@@ -53,7 +53,7 @@ async function verificarAcceso() {
     const res = await fetch(`${BACKEND_URL}/api/verify`, {
       headers: {
         "Authorization": `Bearer ${token}`,
-        "x-api-key": API_KEY
+        "x-api-key": "DRepartos090399202687yu654op987xyz"
       }
     });
 
