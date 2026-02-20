@@ -29,42 +29,22 @@ function cerrarSesion() {
 if (!adminToken) cerrarSesion();
 
 /* =========================
-   DOM READY
+   ELEMENTOS DOM (se asignan después)
 ========================= */
-document.addEventListener("DOMContentLoaded", () => {
+let listaPedidosTabla,
+  totalPedidosEl,
+  recibidosEl,
+  preparacionEl,
+  listosEl,
+  estadoFiltro,
+  clientesContainer,
+  clienteDetalleContainer;
 
-  // Añadir token al CSS
-  document.querySelectorAll("link[rel='stylesheet']").forEach(link => {
-    if (!link.href.includes("token=")) {
-      link.href = link.href.split("?")[0] + `?token=${adminToken}`;
-    }
-  });
-
-  // Logo empresa
-  const empresaLogo = document.getElementById("empresa-logo");
-  if (empresaLogo && empresaLogo.src && !empresaLogo.src.includes("token=")) {
-    empresaLogo.src = empresaLogo.src.split("?")[0] + `?token=${adminToken}`;
-  }
-
-  // Botón crear cliente (SIN inline JS)
-  const btnCrear = document.getElementById("btnCrearCliente");
-  if (btnCrear) {
-    btnCrear.addEventListener("click", crearCliente);
-  }
-
-});
-
-/* =========================
-   ELEMENTOS DOM
-========================= */
-const listaPedidosTabla = document.getElementById("pedidosTabla");
-const totalPedidosEl = document.getElementById("totalPedidos");
-const recibidosEl = document.getElementById("recibidos");
-const preparacionEl = document.getElementById("preparacion");
-const listosEl = document.getElementById("listos");
-const estadoFiltro = document.getElementById("estadoFiltro");
-const clientesContainer = document.getElementById("clientesContainer");
-const clienteDetalleContainer = document.getElementById("clienteDetalle"); // ✅ FIX AQUÍ
+let clientesGlobal = [];
+let paginaActual = 1;
+const clientesPorPagina = 6;
+let filtroBusqueda = "";
+let clienteEditandoId = null;
 
 /* =========================
    FETCH SEGURO
@@ -97,17 +77,23 @@ function actualizarPanelFechaHora() {
   const diasSemana = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
   const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
-  document.getElementById("diaNumero").textContent = String(now.getDate()).padStart(2,"0");
-  document.getElementById("diaSemana").textContent = diasSemana[now.getDay()];
-  document.getElementById("mes").textContent = meses[now.getMonth()];
-  document.getElementById("horaActual").textContent =
+  const diaNumero = document.getElementById("diaNumero");
+  const diaSemana = document.getElementById("diaSemana");
+  const mes = document.getElementById("mes");
+  const horaActual = document.getElementById("horaActual");
+
+  if (!diaNumero) return;
+
+  diaNumero.textContent = String(now.getDate()).padStart(2,"0");
+  diaSemana.textContent = diasSemana[now.getDay()];
+  mes.textContent = meses[now.getMonth()];
+  horaActual.textContent =
     String(now.getHours()).padStart(2,"0") + ":" +
     String(now.getMinutes()).padStart(2,"0") + ":" +
     String(now.getSeconds()).padStart(2,"0");
 }
 
 setInterval(actualizarPanelFechaHora, 1000);
-actualizarPanelFechaHora();
 
 /* =========================
    FORMATEAR FECHA
@@ -120,6 +106,7 @@ function formatFecha(fechaStr) {
    RENDER TABLA PEDIDOS
 ========================= */
 function renderTablaPedidos(pedidos) {
+  if (!listaPedidosTabla) return;
 
   if (!Array.isArray(pedidos) || pedidos.length === 0) {
     listaPedidosTabla.innerHTML = "<p>No hay pedidos</p>";
@@ -166,6 +153,37 @@ function renderTablaPedidos(pedidos) {
 
   html += `</tbody></table>`;
   listaPedidosTabla.innerHTML = html;
+
+  document.querySelectorAll(".estado-select").forEach(select => {
+    select.addEventListener("change", async (e) => {
+      const pedidoId = e.target.dataset.id;
+      const nuevoEstado = e.target.value;
+      try {
+        await fetchSeguro(`${BACKEND_URL}/api/admin/pedidos/${pedidoId}`, {
+          method: "PUT",
+          body: JSON.stringify({ estado: nuevoEstado })
+        });
+        cargarPedidos();
+      } catch (err) {
+        console.error(err);
+        alert("Error actualizando estado");
+      }
+    });
+  });
+
+  document.querySelectorAll(".btn-eliminar").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      if (!confirm("¿Seguro que quieres eliminar este pedido?")) return;
+      try {
+        await fetchSeguro(`${BACKEND_URL}/api/admin/pedidos/${id}`, { method: "DELETE" });
+        cargarPedidos();
+      } catch (err) {
+        console.error(err);
+        alert("Error eliminando pedido");
+      }
+    });
+  });
 }
 
 /* =========================
@@ -185,17 +203,15 @@ function actualizarTarjetas(pedidos) {
 ========================= */
 async function cargarPedidos() {
   try {
-    if (!adminData?.empresa?.id) return cerrarSesion();
+    if (!adminData?.empresa?.id) return;
 
     const res = await fetchSeguro(
       `${BACKEND_URL}/api/admin/pedidos?empresaId=${adminData.empresa.id}`
     );
 
-    if (!res.ok) throw new Error("Error servidor pedidos");
+    if (!res.ok) throw new Error("Error pedidos");
 
     const pedidos = await res.json();
-
-    if (!Array.isArray(pedidos)) return;
 
     const filtro = estadoFiltro?.value;
     const pedidosFiltrados =
@@ -208,11 +224,8 @@ async function cargarPedidos() {
 
   } catch (err) {
     console.error("Error cargando pedidos:", err);
-    listaPedidosTabla.innerHTML = "<p>Error cargando pedidos</p>";
   }
 }
-
-estadoFiltro?.addEventListener("change", cargarPedidos);
 
 /* =========================
    CARGAR CLIENTES
@@ -220,48 +233,74 @@ estadoFiltro?.addEventListener("change", cargarPedidos);
 async function cargarClientes() {
   try {
     const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes`);
-
-    if (!res.ok) throw new Error("Error servidor clientes");
+    if (!res.ok) throw new Error("Error clientes");
 
     const clientes = await res.json();
 
-    if (!Array.isArray(clientes)) {
-      console.error("Clientes no es array:", clientes);
-      clientesContainer.innerHTML = "<p>Error cargando clientes</p>";
-      return;
-    }
+    if (!Array.isArray(clientes)) return;
 
-    if (!clientes.length) {
-      clientesContainer.innerHTML = "<p>No hay clientes registrados</p>";
-      return;
-    }
-
-    clientesContainer.innerHTML = clientes.map(c => `
-      <div class="cliente-card" data-id="${c.id}">
-        <h3>${c.nombre}</h3>
-        <p>Email: ${c.usuario?.email || '-'}</p>
-        <p>Tel: ${c.telefono || '-'}</p>
-        <p>Ref: ${c.ref_code || '-'}</p>
-      </div>
-    `).join("");
-
-    document.querySelectorAll(".cliente-card").forEach(card => {
-      card.addEventListener("click", () => {
-        abrirVistaCliente(card.dataset.id);
-      });
-    });
+    clientesGlobal = clientes;
+    renderClientes();
 
   } catch (err) {
     console.error("Error cargando clientes:", err);
-    clientesContainer.innerHTML = "<p>Error cargando clientes</p>";
   }
 }
 
-/* =========================
-   CREAR CLIENTE
-========================= */
-function crearCliente() {
-  alert("Formulario crear cliente (lo implementamos después si quieres)");
+function renderClientes() {
+  if (!clientesContainer) return;
+
+  let filtrados = clientesGlobal.filter(c =>
+    c.nombre.toLowerCase().includes(filtroBusqueda.toLowerCase()) ||
+    (c.usuario?.email || "").toLowerCase().includes(filtroBusqueda.toLowerCase())
+  );
+
+  const totalClientes = document.getElementById("totalClientes");
+  if (totalClientes) totalClientes.innerText = filtrados.length;
+
+  const inicio = (paginaActual - 1) * clientesPorPagina;
+  const fin = inicio + clientesPorPagina;
+  const clientesPagina = filtrados.slice(inicio, fin);
+
+  if (!clientesPagina.length) {
+    clientesContainer.innerHTML = "<p>No hay clientes</p>";
+    return;
+  }
+
+  clientesContainer.innerHTML = clientesPagina.map(c => `
+    <div class="cliente-card">
+      <h3>${c.nombre}</h3>
+      <p>Email: ${c.usuario?.email || '-'}</p>
+      <p>Tel: ${c.telefono || '-'}</p>
+      <div style="margin-top:10px; display:flex; gap:8px;">
+        <button onclick="editarCliente(${c.id})">Editar</button>
+        <button onclick="eliminarCliente(${c.id})">Eliminar</button>
+      </div>
+    </div>
+  `).join("");
+
+  renderPaginacion(filtrados.length);
+}
+
+function renderPaginacion(total) {
+  const totalPaginas = Math.ceil(total / clientesPorPagina);
+  let html = `<div style="margin-top:20px; display:flex; gap:8px;">`;
+
+  for (let i = 1; i <= totalPaginas; i++) {
+    html += `
+      <button style="${i === paginaActual ? 'font-weight:bold;' : ''}" onclick="cambiarPagina(${i})">
+        ${i}
+      </button>
+    `;
+  }
+
+  html += `</div>`;
+  clientesContainer.innerHTML += html;
+}
+
+function cambiarPagina(pagina) {
+  paginaActual = pagina;
+  renderClientes();
 }
 
 /* =========================
@@ -270,84 +309,120 @@ function crearCliente() {
 async function abrirVistaCliente(clienteId) {
   try {
     const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes/${clienteId}`);
-
-    if (!res.ok) throw new Error("Error detalle cliente");
+    if (!res.ok) throw new Error("Error detalle");
 
     const cliente = await res.json();
-
-    const pedidosRes = await fetchSeguro(
-      `${BACKEND_URL}/api/admin/pedidos?empresaId=${adminData.empresa.id}&usuarioId=${cliente.usuario_id}`
-    );
-
-    const pedidos = await pedidosRes.json();
 
     clienteDetalleContainer.innerHTML = `
       <div class="cliente-detalle">
         <h2>${cliente.nombre}</h2>
         <p>Email: ${cliente.usuario?.email || '-'}</p>
         <p>Tel: ${cliente.telefono || '-'}</p>
-        <p>Ref: ${cliente.ref_code || '-'}</p>
         ${cliente.notas ? `<p>Notas: ${cliente.notas}</p>` : ''}
-        <h3>Historial de Pedidos</h3>
-        <ul>
-          ${
-            Array.isArray(pedidos)
-              ? pedidos.map(p =>
-                  `<li>${formatFecha(p.fecha)} - ${p.pedido_final} [${p.estado}]</li>`
-                ).join('')
-              : "<li>No hay pedidos</li>"
-          }
-        </ul>
       </div>
     `;
-
   } catch (err) {
-    console.error("Error detalle cliente:", err);
-    clienteDetalleContainer.innerHTML = "<p>Error cargando información del cliente</p>";
+    console.error(err);
+  }
+}
+
+async function editarCliente(id) {
+  const cliente = clientesGlobal.find(c => c.id === id);
+  if (!cliente) return;
+
+  clienteEditandoId = id;
+
+  document.getElementById("nuevoNombre").value = cliente.nombre;
+  document.getElementById("nuevoEmail").value = cliente.usuario?.email || "";
+  document.getElementById("nuevoTelefono").value = cliente.telefono || "";
+  document.getElementById("nuevoDireccion").value = cliente.direccion || "";
+  document.getElementById("nuevoNotas").value = cliente.notas || "";
+  
+  document.getElementById("btnSubmitCliente").textContent = "Guardar Cambios";
+  document.getElementById("modalCrearCliente").style.display = "flex";
+}
+
+async function eliminarCliente(id) {
+  if (!confirm("¿Seguro que quieres eliminar este cliente?")) return;
+
+  try {
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Error eliminando");
+    cargarClientes();
+  } catch (err) {
+    console.error(err);
   }
 }
 
 /* =========================
-   NAVEGACIÓN SIDEBAR
+   INICIALIZACIÓN GENERAL
 ========================= */
 document.addEventListener("DOMContentLoaded", () => {
+  listaPedidosTabla = document.getElementById("pedidosTabla");
+  totalPedidosEl = document.getElementById("totalPedidos");
+  recibidosEl = document.getElementById("recibidos");
+  preparacionEl = document.getElementById("preparacion");
+  listosEl = document.getElementById("listos");
+  estadoFiltro = document.getElementById("estadoFiltro");
+  clientesContainer = document.getElementById("clientesContainer");
+  clienteDetalleContainer = document.getElementById("clienteDetalle");
 
-  const menuItems = document.querySelectorAll(".sidebar nav ul li");
-  const seccionPedidos = document.getElementById("seccionPedidos");
-  const seccionClientes = document.getElementById("seccionClientes");
-  const mainTitle = document.getElementById("mainTitle");
+  actualizarPanelFechaHora();
 
-  menuItems.forEach(item => {
-    item.addEventListener("click", () => {
+  estadoFiltro?.addEventListener("change", cargarPedidos);
 
-      menuItems.forEach(i => i.classList.remove("active"));
-      item.classList.add("active");
+  const modal = document.getElementById("modalCrearCliente");
+  const btnCrear = document.getElementById("btnCrearCliente");
+  const cerrarBtn = document.getElementById("cerrarModalCliente");
+  const form = document.getElementById("formCrearCliente");
+  const buscador = document.getElementById("buscadorClientes");
 
-      const seccion = item.dataset.seccion;
-
-      if (seccion === "pedidos") {
-        seccionPedidos.style.display = "block";
-        seccionClientes.style.display = "none";
-        mainTitle.innerHTML = "📦 Gestión de Pedidos";
-      }
-
-      if (seccion === "clientes") {
-        seccionPedidos.style.display = "none";
-        seccionClientes.style.display = "block";
-        mainTitle.innerHTML = "👥 Gestión de Clientes";
-      }
-
-    });
+  buscador?.addEventListener("input", (e) => {
+    filtroBusqueda = e.target.value;
+    paginaActual = 1;
+    renderClientes();
   });
 
+  btnCrear?.addEventListener("click", () => modal.style.display = "flex");
+  cerrarBtn?.addEventListener("click", () => modal.style.display = "none");
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const nombre = document.getElementById("nuevoNombre").value;
+    const email = document.getElementById("nuevoEmail").value;
+    const telefono = document.getElementById("nuevoTelefono").value;
+    const direccion = document.getElementById("nuevoDireccion").value;
+    const notas = document.getElementById("nuevoNotas").value;
+
+    try {
+      if (clienteEditandoId) {
+        const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes/${clienteEditandoId}`, {
+          method: "PUT",
+          body: JSON.stringify({ nombre, telefono, direccion, notas })
+        });
+        if (!res.ok) throw new Error("Error editando cliente");
+        clienteEditandoId = null;
+      } else {
+        const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes`, {
+          method: "POST",
+          body: JSON.stringify({ nombre, email, telefono, direccion, notas, empresaId: adminData.empresa.id })
+        });
+        if (!res.ok) throw new Error("Error creando cliente");
+      }
+
+      modal.style.display = "none";
+      form.reset();
+      cargarClientes();
+    } catch (err) {
+      console.error("Error guardando cliente:", err);
+      alert("Error guardando cliente");
+    }
+  });
+
+  cargarPedidos();
+  cargarClientes();
+
+  setInterval(cargarPedidos, 10000);
+  setInterval(cargarClientes, 15000);
 });
-
-
-/* =========================
-   INICIALIZAR
-========================= */
-cargarPedidos();
-setInterval(cargarPedidos, 10000);
-
-cargarClientes();
-setInterval(cargarClientes, 15000);
