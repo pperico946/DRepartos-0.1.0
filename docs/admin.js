@@ -17,6 +17,16 @@ if (tokenFromUrl) {
   localStorage.setItem("admin_token", tokenFromUrl);
 }
 
+if (!adminData) {
+  fetchSeguro(`${BACKEND_URL}/api/verify`)
+    .then(res => res.json())
+    .then(data => {
+      localStorage.setItem("usuario", JSON.stringify(data));
+      adminData = data;
+    });
+}
+
+
 let adminToken = localStorage.getItem("admin_token");
 let adminData = JSON.parse(localStorage.getItem("usuario") || "null");
 
@@ -160,7 +170,7 @@ function renderTablaPedidos(pedidos) {
       const nuevoEstado = e.target.value;
       try {
         await fetchSeguro(`${BACKEND_URL}/api/admin/pedidos/${pedidoId}`, {
-          method: "PUT",
+          method: "PATCH",
           body: JSON.stringify({ estado: nuevoEstado })
         });
         cargarPedidos();

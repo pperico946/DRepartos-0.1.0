@@ -175,9 +175,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const closeLoginBtn = document.getElementById("close-login");
   const loginForm = document.querySelector(".login-form");
 
-  clientesContainer = document.getElementById("clientesContainer");
-  const buscador = document.getElementById("buscadorClientes");
-
   // ---- Tema guardado ----
   const savedTheme = localStorage.getItem("theme") || "dark";
   document.body.setAttribute("data-theme", savedTheme);
@@ -199,11 +196,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   themeToggleBtn?.addEventListener("click", toggleTheme);
   closeLoginBtn?.addEventListener("click", closeEmpresaModal);
   loginForm?.addEventListener("submit", loginEmpresa);
-  buscador?.addEventListener("input", (e) => {
-    filtroBusqueda = e.target.value;
-    paginaActual = 1;
-    renderClientes();
-  });
 
   // ---- Navbar scroll ----
   window.addEventListener("scroll", () => {
@@ -238,7 +230,4 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   });
-
-  // ---- Cargar clientes automáticamente si existe contenedor ----
-  if (clientesContainer) cargarClientes();
-});
+})
