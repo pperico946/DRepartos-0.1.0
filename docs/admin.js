@@ -47,10 +47,6 @@ async function verificarAcceso() {
   }
 }
 
-verificarAcceso();
-
-
-
 /* =========================
    TOKEN DESDE URL
 ========================= */
@@ -98,6 +94,12 @@ async function fetchSeguro(url, options = {}) {
 
   return res;
 }
+
+verificarAcceso();
+
+
+
+
 
 /* =========================
    FECHA Y HORA
