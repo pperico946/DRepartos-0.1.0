@@ -1,7 +1,6 @@
 /* =========================
    CONFIGURACIÓN BACKEND
 ========================= */
-let adminToken = localStorage.getItem("admin_token");
 let adminData = JSON.parse(localStorage.getItem("usuario") || "null");
 let listaPedidosTabla,
   totalPedidosEl,
@@ -34,8 +33,11 @@ const tokenFromUrl = urlParams.get("token");
 
 if (tokenFromUrl) {
   localStorage.setItem("admin_token", tokenFromUrl);
-  adminToken = tokenFromUrl;
 }
+
+// 🔥 AHORA sí lo leemos
+let adminToken = localStorage.getItem("admin_token");
+
 
 function cerrarSesion() {
   localStorage.removeItem("admin_token");
