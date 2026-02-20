@@ -34,6 +34,7 @@ const tokenFromUrl = urlParams.get("token");
 
 if (tokenFromUrl) {
   localStorage.setItem("admin_token", tokenFromUrl);
+  adminToken = tokenFromUrl;
 }
 
 function cerrarSesion() {
@@ -279,6 +280,18 @@ function renderClientes() {
     </div>
   `).join("");
 
+  document.querySelectorAll(".btn-editar").forEach(btn => {
+    btn.addEventListener("click", () => {
+    editarCliente(Number(btn.dataset.id));
+   });
+ });
+
+  document.querySelectorAll(".btn-eliminar-cliente").forEach(btn => {
+    btn.addEventListener("click", () => {
+    eliminarCliente(Number(btn.dataset.id));
+   });
+ });
+
   renderPaginacion(filtrados.length);
 }
 
@@ -303,18 +316,6 @@ function cambiarPagina(pagina) {
   paginaActual = pagina;
   renderClientes();
   }
-
- document.querySelectorAll(".btn-editar").forEach(btn => {
-    btn.addEventListener("click", () => {
-    editarCliente(Number(btn.dataset.id));
-   });
- });
-
- document.querySelectorAll(".btn-eliminar-cliente").forEach(btn => {
-    btn.addEventListener("click", () => {
-    eliminarCliente(Number(btn.dataset.id));
-   });
- });
 
 
 /* =========================
@@ -423,7 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes`, {
           method: "POST",
-          body: JSON.stringify({ nombre, email, telefono, direccion, notas, empresaId: adminData.empresa.id })
+          body: JSON.stringify({ nombre, email, telefono, direccion, notas })
         });
         if (!res.ok) throw new Error("Error creando cliente");
       }
