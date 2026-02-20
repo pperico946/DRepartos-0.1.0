@@ -29,10 +29,10 @@ const BACKEND_URL =
    TOKEN DESDE URL
 ========================= */
 const urlParams = new URLSearchParams(window.location.search);
-const tokenFromUrl = urlParams.get("token");
+const token = urlParams.get("token");
 
-if (tokenFromUrl) {
-  localStorage.setItem("admin_token", tokenFromUrl);
+if (token) {
+  localStorage.setItem("token", token);
 }
 
 // 🔥 AHORA sí lo leemos
