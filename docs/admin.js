@@ -226,14 +226,6 @@ async function cargarPedidos() {
   }
 }
 
-/* =========================
-   INICIALIZACIÓN PANEL CLIENTES
-========================= */
-document.addEventListener("DOMContentLoaded", () => {
-  btnAbrirBarraClientes?.addEventListener("click", abrirBarraHerramientasClientes);
-  btnAñadirCliente?.addEventListener("click", crearClienteDesdeBarra);
-});
-
 
 /* =========================
    CARGAR CLIENTES
