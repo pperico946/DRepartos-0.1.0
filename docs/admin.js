@@ -46,26 +46,27 @@ if (!adminToken) {
 
 // 3️⃣ Verificar token
 async function verificarAcceso() {
+  const token = localStorage.getItem("admin_token");
+  if (!token) return window.location.href = "/"; // Redirige si no hay token
+
   try {
     const res = await fetch(`${BACKEND_URL}/api/verify`, {
       headers: {
-        "Authorization": `Bearer ${adminToken}`,
-        "x-api-key": "DRepartos090399202687yu654op987xyz",
-      },
+        "Authorization": `Bearer ${token}`,
+        "x-api-key": API_KEY
+      }
     });
 
     if (!res.ok) {
       localStorage.removeItem("admin_token");
-      window.location.href = `${BACKEND_URL}`;
+      window.location.href = "/";
     }
-  } catch (err) {
-    console.error(err);
-    window.location.href = `${BACKEND_URL}`;
+  } catch {
+    window.location.href = "/";
   }
 }
 
 verificarAcceso();
-
 /* =========================
    FECHA Y HORA
 ========================= */
