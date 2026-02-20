@@ -166,6 +166,102 @@ async function verificarToken() {
 }
 
 /* =========================
+   CLIENTES - VARIABLES GLOBALES
+========================= */
+let clientesContainer;
+let clientesGlobal = [];
+let paginaActual = 1;
+const clientesPorPagina = 6;
+let filtroBusqueda = "";
+let clienteEditandoId = null;
+
+/* =========================
+   CLIENTES - FUNCIONES
+========================= */
+async function cargarClientes() {
+  try {
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes`);
+    if (!res.ok) throw new Error("Error cargando clientes");
+
+    const clientes = await res.json();
+    clientesGlobal = Array.isArray(clientes) ? clientes : [];
+    renderClientes();
+  } catch (err) {
+    console.error("Error cargando clientes:", err);
+    if (clientesContainer) clientesContainer.innerHTML = "<p>Error cargando clientes</p>";
+  }
+}
+
+function renderClientes() {
+  if (!clientesContainer) return;
+
+  let filtrados = clientesGlobal.filter(c =>
+    c.nombre.toLowerCase().includes(filtroBusqueda.toLowerCase()) ||
+    (c.usuario?.email || "").toLowerCase().includes(filtroBusqueda.toLowerCase())
+  );
+
+  const inicio = (paginaActual - 1) * clientesPorPagina;
+  const fin = inicio + clientesPorPagina;
+  const clientesPagina = filtrados.slice(inicio, fin);
+
+  if (!clientesPagina.length) {
+    clientesContainer.innerHTML = "<p>No hay clientes</p>";
+    return;
+  }
+
+  clientesContainer.innerHTML = clientesPagina.map(c => `
+    <div class="cliente-card">
+      <h3>${c.nombre}</h3>
+      <p>Email: ${c.usuario?.email || '-'}</p>
+      <p>Tel: ${c.telefono || '-'}</p>
+      <p>Dirección: ${c.direccion || '-'}</p>
+      <p>Notas: ${c.notas || '-'}</p>
+      <div style="margin-top:10px; display:flex; gap:8px;">
+        <button onclick="editarCliente(${c.id})">Editar</button>
+        <button onclick="eliminarCliente(${c.id})">Eliminar</button>
+      </div>
+    </div>
+  `).join("");
+
+  renderPaginacion(filtrados.length);
+}
+
+function renderPaginacion(total) {
+  const totalPaginas = Math.ceil(total / clientesPorPagina);
+  let html = `<div style="margin-top:20px; display:flex; gap:8px;">`;
+  for (let i = 1; i <= totalPaginas; i++) {
+    html += `<button style="${i === paginaActual ? 'font-weight:bold;' : ''}" onclick="cambiarPagina(${i})">${i}</button>`;
+  }
+  html += `</div>`;
+  clientesContainer.innerHTML += html;
+}
+
+function cambiarPagina(pagina) {
+  paginaActual = pagina;
+  renderClientes();
+}
+
+async function editarCliente(id) {
+  const cliente = clientesGlobal.find(c => c.id === id);
+  if (!cliente) return;
+  console.log("Editar cliente:", cliente);
+  // Aquí se puede abrir un modal para edición si se desea
+}
+
+async function eliminarCliente(id) {
+  if (!confirm("¿Seguro que quieres eliminar este cliente?")) return;
+
+  try {
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Error eliminando cliente");
+    cargarClientes();
+  } catch (err) {
+    console.error(err);
+    alert("Error eliminando cliente");
+  }
+}
+
+/* =========================
    INICIALIZACIÓN DOM
 ========================= */
 document.addEventListener("DOMContentLoaded", async () => {
@@ -174,6 +270,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const themeToggleBtn = document.getElementById("theme-toggle");
   const closeLoginBtn = document.getElementById("close-login");
   const loginForm = document.querySelector(".login-form");
+
+  clientesContainer = document.getElementById("clientesContainer");
+  const buscador = document.getElementById("buscadorClientes");
 
   // ---- Tema guardado ----
   const savedTheme = localStorage.getItem("theme") || "dark";
@@ -196,6 +295,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   themeToggleBtn?.addEventListener("click", toggleTheme);
   closeLoginBtn?.addEventListener("click", closeEmpresaModal);
   loginForm?.addEventListener("submit", loginEmpresa);
+  buscador?.addEventListener("input", (e) => {
+    filtroBusqueda = e.target.value;
+    paginaActual = 1;
+    renderClientes();
+  });
 
   // ---- Navbar scroll ----
   window.addEventListener("scroll", () => {
@@ -216,9 +320,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (entry.isIntersecting) entry.target.classList.add("visible");
     });
   }, observerOptions);
-  const fadeElements = document.querySelectorAll(
-    ".feature-card, .partner-card, .roadmap-item"
-  );
+  const fadeElements = document.querySelectorAll(".feature-card, .partner-card, .roadmap-item");
   fadeElements.forEach((el) => {
     el.classList.add("fade-in");
     observer.observe(el);
@@ -232,4 +334,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   });
+
+  // ---- Cargar clientes automáticamente si existe contenedor ----
+  if (clientesContainer) cargarClientes();
 });
