@@ -38,6 +38,11 @@ if (tokenFromUrl) {
 // 🔥 AHORA sí lo leemos
 let adminToken = localStorage.getItem("admin_token");
 
+if (!adminToken) {
+  // No hay token → redirigir a login
+  window.location.href = "/"; 
+}
+
 
 function cerrarSesion() {
   localStorage.removeItem("admin_token");
