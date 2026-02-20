@@ -126,21 +126,21 @@ async function loginEmpresa(event) {
       return;
     }
 
-    // Guardar token y usuario según rol
+   // Guardar token y usuario según rol
     if (data.rol === "admin") {
-      localStorage.setItem("admin_token", data.token);
-      localStorage.setItem("usuario", JSON.stringify(data));
-      window.location.href = `${BACKEND_URL}/private/admin.html`;
-        } else if (data.rol === "empleado") {
-      localStorage.setItem("empleado_token", data.token);
-      window.location.href = `${BACKEND_URL}/private/empleado.html?token=${data.token}`;
-        } else if (data.rol === "cliente") {
-      localStorage.setItem("cliente_token", data.token);
-      window.location.href = `${BACKEND_URL}/app/index.html?token=${data.token}`;
-        }
-      else {
-        if (errorEl) errorEl.textContent = "Acceso no autorizado";
-        }
+    localStorage.setItem("admin_token", data.token);
+    localStorage.setItem("usuario", JSON.stringify(data));
+  // Redirigir SIN pasar token por URL
+    window.location.href = `${BACKEND_URL}/private/admin.html`;
+  } else if (data.rol === "empleado") {
+    localStorage.setItem("empleado_token", data.token);
+    window.location.href = `${BACKEND_URL}/private/empleado.html`;
+  } else if (data.rol === "cliente") {
+    localStorage.setItem("cliente_token", data.token);
+    window.location.href = `${BACKEND_URL}/app/index.html`;
+  } else {
+  if (errorEl) errorEl.textContent = "Acceso no autorizado";
+}
      } catch (err) {
      console.error(err);
      if (errorEl) errorEl.textContent = "Error conectando con el servidor";

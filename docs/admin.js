@@ -25,17 +25,33 @@ const BACKEND_URL =
 
 const token = localStorage.getItem("admin_token");
 
-if (!token) {
-  window.location.href = `${BACKEND_URL}`;
+
+/* =========================
+   TOKEN DESDE URL
+========================= */
+// 1️⃣ Si venimos con token en URL (antiguo), guardarlo
+const urlParams = new URLSearchParams(window.location.search);
+const tokenFromUrl = urlParams.get("token");
+if (tokenFromUrl) {
+  localStorage.setItem("admin_token", tokenFromUrl);
+  // Limpiar URL para que no quede en el historial
+  window.history.replaceState({}, document.title, "/private/admin.html");
 }
 
+// 2️⃣ Leer token desde localStorage
+const adminToken = localStorage.getItem("admin_token");
+if (!adminToken) {
+  window.location.href = `${BACKEND_URL}`; // Redirige a login
+}
+
+// 3️⃣ Verificar token
 async function verificarAcceso() {
   try {
     const res = await fetch(`${BACKEND_URL}/api/verify`, {
       headers: {
-        "Authorization": `Bearer ${token}`,
-        "x-api-key": "DRepartos090399202687yu654op987xyz"
-      }
+        "Authorization": `Bearer ${adminToken}`,
+        "x-api-key": "DRepartos090399202687yu654op987xyz",
+      },
     });
 
     if (!res.ok) {
@@ -43,63 +59,12 @@ async function verificarAcceso() {
       window.location.href = `${BACKEND_URL}`;
     }
   } catch (err) {
+    console.error(err);
     window.location.href = `${BACKEND_URL}`;
   }
 }
 
-/* =========================
-   TOKEN DESDE URL
-========================= */
-const urlParams = new URLSearchParams(window.location.search);
-
-if (token) {
-  localStorage.setItem("token", token);
-}
-
-// 🔥 AHORA sí lo leemos
-let adminToken = localStorage.getItem("admin_token");
-
-if (!adminToken) {
-  // No hay token → redirigir a login
-  window.location.href = "/"; 
-}
-
-
-function cerrarSesion() {
-  localStorage.removeItem("admin_token");
-  localStorage.removeItem("usuario");
-  window.location.href = "/";
-}
-
-
-/* =========================
-   FETCH SEGURO
-========================= */
-async function fetchSeguro(url, options = {}) {
-  const config = {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${adminToken}`,
-      ...(options.headers || {})
-    }
-  };
-
-  const res = await fetch(url, config);
-
-  if (res.status === 401 || res.status === 403) {
-    cerrarSesion();
-    throw new Error("Sesión expirada");
-  }
-
-  return res;
-}
-
 verificarAcceso();
-
-
-
-
 
 /* =========================
    FECHA Y HORA
