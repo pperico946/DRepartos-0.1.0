@@ -50,8 +50,6 @@ function cerrarSesion() {
   window.location.href = "/";
 }
 
-if (!adminToken) cerrarSesion();
-
 
 /* =========================
    FETCH SEGURO
