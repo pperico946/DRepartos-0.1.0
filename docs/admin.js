@@ -51,6 +51,30 @@ verificarAcceso();
 
 
 
+/* =========================
+   TOKEN DESDE URL
+========================= */
+const urlParams = new URLSearchParams(window.location.search);
+
+if (token) {
+  localStorage.setItem("token", token);
+}
+
+// 🔥 AHORA sí lo leemos
+let adminToken = localStorage.getItem("admin_token");
+
+if (!adminToken) {
+  // No hay token → redirigir a login
+  window.location.href = "/"; 
+}
+
+
+function cerrarSesion() {
+  localStorage.removeItem("admin_token");
+  localStorage.removeItem("usuario");
+  window.location.href = "/";
+}
+
 
 /* =========================
    FETCH SEGURO
