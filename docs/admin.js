@@ -1,46 +1,8 @@
 /* =========================
    CONFIGURACIÓN BACKEND
 ========================= */
-const BACKEND_URL =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1"
-    ? "http://localhost:3003"
-    : "https://drepartos.onrender.com";
-
-/* =========================
-   TOKEN DESDE URL
-========================= */
-const urlParams = new URLSearchParams(window.location.search);
-const tokenFromUrl = urlParams.get("token");
-
-if (tokenFromUrl) {
-  localStorage.setItem("admin_token", tokenFromUrl);
-}
-
-if (!adminData) {
-  fetchSeguro(`${BACKEND_URL}/api/verify`)
-    .then(res => res.json())
-    .then(data => {
-      localStorage.setItem("usuario", JSON.stringify(data));
-      adminData = data;
-    });
-}
-
-
 let adminToken = localStorage.getItem("admin_token");
 let adminData = JSON.parse(localStorage.getItem("usuario") || "null");
-
-function cerrarSesion() {
-  localStorage.removeItem("admin_token");
-  localStorage.removeItem("usuario");
-  window.location.href = "/";
-}
-
-if (!adminToken) cerrarSesion();
-
-/* =========================
-   ELEMENTOS DOM (se asignan después)
-========================= */
 let listaPedidosTabla,
   totalPedidosEl,
   recibidosEl,
@@ -52,9 +14,36 @@ let listaPedidosTabla,
 
 let clientesGlobal = [];
 let paginaActual = 1;
-const clientesPorPagina = 6;
 let filtroBusqueda = "";
 let clienteEditandoId = null;
+const clientesPorPagina = 6;
+
+const BACKEND_URL =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? "http://localhost:3003"
+    : "https://drepartos.onrender.com";
+
+
+
+/* =========================
+   TOKEN DESDE URL
+========================= */
+const urlParams = new URLSearchParams(window.location.search);
+const tokenFromUrl = urlParams.get("token");
+
+if (tokenFromUrl) {
+  localStorage.setItem("admin_token", tokenFromUrl);
+}
+
+function cerrarSesion() {
+  localStorage.removeItem("admin_token");
+  localStorage.removeItem("usuario");
+  window.location.href = "/";
+}
+
+if (!adminToken) cerrarSesion();
+
 
 /* =========================
    FETCH SEGURO
@@ -292,8 +281,8 @@ function renderClientes() {
       <p>Email: ${c.usuario?.email || '-'}</p>
       <p>Tel: ${c.telefono || '-'}</p>
       <div style="margin-top:10px; display:flex; gap:8px;">
-        <button onclick="editarCliente(${c.id})">Editar</button>
-        <button onclick="eliminarCliente(${c.id})">Eliminar</button>
+      <button class="btn-editar" data-id="${c.id}">Editar</button>
+      <button class="btn-eliminar-cliente" data-id="${c.id}">Eliminar</button>
       </div>
     </div>
   `).join("");
@@ -315,12 +304,26 @@ function renderPaginacion(total) {
 
   html += `</div>`;
   clientesContainer.innerHTML += html;
-}
+  }
+
 
 function cambiarPagina(pagina) {
   paginaActual = pagina;
   renderClientes();
-}
+  }
+
+ document.querySelectorAll(".btn-editar").forEach(btn => {
+    btn.addEventListener("click", () => {
+    editarCliente(Number(btn.dataset.id));
+   });
+ });
+
+ document.querySelectorAll(".btn-eliminar-cliente").forEach(btn => {
+    btn.addEventListener("click", () => {
+    eliminarCliente(Number(btn.dataset.id));
+   });
+ });
+
 
 /* =========================
    DETALLE CLIENTE
@@ -361,7 +364,6 @@ async function editarCliente(id) {
 
   document.getElementById("btnSubmitCliente").textContent = "Guardar Cambios";
   document.getElementById("modalCrearCliente").style.display = "flex";
-  document.getElementById("tituloModalCliente").textContent = "Crear Nuevo Cliente";
 
 }
 
