@@ -228,6 +228,41 @@ async function cargarPedidos() {
 }
 
 /* =========================
+   PANEL DE HERRAMIENTAS CLIENTES
+========================= */
+function abrirBarraHerramientasClientes() {
+  const barra = document.getElementById("barra-herramientas-clientes");
+  if (!barra) return;
+
+  barra.style.display = barra.style.display === "flex" ? "none" : "flex";
+}
+
+function crearClienteDesdeBarra() {
+  // Reset modal
+  clienteEditandoId = null;
+  document.getElementById("nuevoNombre").value = "";
+  document.getElementById("nuevoEmail").value = "";
+  document.getElementById("nuevoTelefono").value = "";
+  document.getElementById("nuevoDireccion").value = "";
+  document.getElementById("nuevoNotas").value = "";
+
+  document.getElementById("btnSubmitCliente").textContent = "Crear Cliente";
+  document.getElementById("modalCrearCliente").style.display = "flex";
+}
+
+/* =========================
+   INICIALIZACIÓN PANEL CLIENTES
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const btnAbrirBarraClientes = document.getElementById("btn-sidebar-clientes");
+  const btnAñadirCliente = document.getElementById("btn-crear-cliente-barra");
+
+  btnAbrirBarraClientes?.addEventListener("click", abrirBarraHerramientasClientes);
+  btnAñadirCliente?.addEventListener("click", crearClienteDesdeBarra);
+});
+
+
+/* =========================
    CARGAR CLIENTES
 ========================= */
 async function cargarClientes() {
