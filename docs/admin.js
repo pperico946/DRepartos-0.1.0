@@ -23,32 +23,33 @@ const BACKEND_URL =
     ? "http://localhost:3003"
     : "https://drepartos.onrender.com";
 
+const token = localStorage.getItem("admin_token");
 
-
-/* =========================
-   TOKEN DESDE URL
-========================= */
-const urlParams = new URLSearchParams(window.location.search);
-const token = urlParams.get("token");
-
-if (token) {
-  localStorage.setItem("token", token);
+if (!token) {
+  window.location.href = `${BACKEND_URL}`;
 }
 
-// 🔥 AHORA sí lo leemos
-let adminToken = localStorage.getItem("admin_token");
+async function verificarAcceso() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/verify`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "x-api-key": "DRepartos090399202687yu654op987xyz"
+      }
+    });
 
-if (!adminToken) {
-  // No hay token → redirigir a login
-  window.location.href = "/"; 
+    if (!res.ok) {
+      localStorage.removeItem("admin_token");
+      window.location.href = `${BACKEND_URL}`;
+    }
+  } catch (err) {
+    window.location.href = `${BACKEND_URL}`;
+  }
 }
 
+verificarAcceso();
 
-function cerrarSesion() {
-  localStorage.removeItem("admin_token");
-  localStorage.removeItem("usuario");
-  window.location.href = "/";
-}
+
 
 
 /* =========================
