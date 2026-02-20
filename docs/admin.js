@@ -238,35 +238,9 @@ async function cargarPedidos() {
 }
 
 /* =========================
-   PANEL DE HERRAMIENTAS CLIENTES
-========================= */
-function abrirBarraHerramientasClientes() {
-  const barra = document.getElementById("barra-herramientas-clientes");
-  if (!barra) return;
-
-  barra.style.display = barra.style.display === "flex" ? "none" : "flex";
-}
-
-function crearClienteDesdeBarra() {
-  // Reset modal
-  clienteEditandoId = null;
-  document.getElementById("nuevoNombre").value = "";
-  document.getElementById("nuevoEmail").value = "";
-  document.getElementById("nuevoTelefono").value = "";
-  document.getElementById("nuevoDireccion").value = "";
-  document.getElementById("nuevoNotas").value = "";
-
-  document.getElementById("btnSubmitCliente").textContent = "Crear Cliente";
-  document.getElementById("modalCrearCliente").style.display = "flex";
-}
-
-/* =========================
    INICIALIZACIÓN PANEL CLIENTES
 ========================= */
 document.addEventListener("DOMContentLoaded", () => {
-  const btnAbrirBarraClientes = document.getElementById("btn-sidebar-clientes");
-  const btnAñadirCliente = document.getElementById("btn-crear-cliente-barra");
-
   btnAbrirBarraClientes?.addEventListener("click", abrirBarraHerramientasClientes);
   btnAñadirCliente?.addEventListener("click", crearClienteDesdeBarra);
 });
@@ -383,8 +357,12 @@ async function editarCliente(id) {
   document.getElementById("nuevoDireccion").value = cliente.direccion || "";
   document.getElementById("nuevoNotas").value = cliente.notas || "";
   
+  document.getElementById("tituloModalCliente").textContent = "Editar Cliente";
+
   document.getElementById("btnSubmitCliente").textContent = "Guardar Cambios";
   document.getElementById("modalCrearCliente").style.display = "flex";
+  document.getElementById("tituloModalCliente").textContent = "Crear Nuevo Cliente";
+
 }
 
 async function eliminarCliente(id) {
@@ -464,6 +442,43 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Error guardando cliente");
     }
   });
+
+  /* =========================
+   NAVEGACIÓN SIDEBAR
+========================= */
+document.querySelectorAll(".sidebar li").forEach(item => {
+  item.addEventListener("click", () => {
+
+    // Quitar active
+    document.querySelectorAll(".sidebar li")
+      .forEach(li => li.classList.remove("active"));
+
+    item.classList.add("active");
+
+    const seccion = item.dataset.seccion;
+
+    const seccionPedidos = document.getElementById("seccionPedidos");
+    const seccionClientes = document.getElementById("seccionClientes");
+
+    if (seccionPedidos) seccionPedidos.style.display = "none";
+    if (seccionClientes) seccionClientes.style.display = "none";
+
+    if (seccion === "pedidos") {
+      seccionPedidos.style.display = "block";
+      document.getElementById("mainTitle").innerHTML =
+        "<span>📦</span><span>Gestión de Pedidos</span>";
+    }
+
+    if (seccion === "clientes") {
+      seccionClientes.style.display = "block";
+      document.getElementById("mainTitle").innerHTML =
+        "<span>👥</span><span>Gestión de Clientes</span>";
+      cargarClientes();
+    }
+
+  });
+});
+
 
   cargarPedidos();
   cargarClientes();
