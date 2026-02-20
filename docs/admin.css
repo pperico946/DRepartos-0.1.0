@@ -980,9 +980,11 @@ body {
   font-size: 1.4rem;
   font-weight: 700;
   background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
+  background-clip: text;
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
+
 
 .modal-content label {
   display: block;
