@@ -208,7 +208,7 @@ async function cargarPedidos() {
     if (!adminData?.empresa?.id) return;
 
     const res = await fetchSeguro(
-      `${BACKEND_URL}/api/admin/pedidos?empresaId=${adminData.empresa.id}`
+      `${BACKEND_URL}/api/admin/pedidos`
     );
 
     if (!res.ok) throw new Error("Error pedidos");
