@@ -130,7 +130,6 @@ async function loginEmpresa(event) {
     if (data.rol === "admin") {
       localStorage.setItem("admin_token", data.token);
       localStorage.setItem("usuario", JSON.stringify(data));
-      // Abrimos admin.html con token en URL
       window.location.href = `${BACKEND_URL}/private/admin.html?token=${data.token}`;
         } else if (data.rol === "empleado") {
       localStorage.setItem("empleado_token", data.token);
