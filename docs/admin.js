@@ -1,7 +1,6 @@
 /* =========================
    CONFIGURACIÓN BACKEND
 ========================= */
-let adminData = JSON.parse(localStorage.getItem("usuario") || "null");
 let listaPedidosTabla,
   totalPedidosEl,
   recibidosEl,
@@ -23,27 +22,22 @@ const BACKEND_URL =
     ? "http://localhost:3003"
     : "https://drepartos.onrender.com";
 
-/* =========================
-   TOKEN DESDE URL O LOCALSTORAGE
-========================= */
 
-// 1️⃣ Leer token desde URL
+// ==========================
+// TOKEN DESDE URL
+// ==========================
 const urlParams = new URLSearchParams(window.location.search);
-let adminToken = urlParams.get("token");
+const tokenFromUrl = urlParams.get("token");
 
-// 2️⃣ Si viene por URL → guardarlo en localStorage
-if (adminToken) {
-  localStorage.setItem("admin_token", adminToken);
-  // limpiar la URL
+if (tokenFromUrl) {
+  localStorage.setItem("admin_token", tokenFromUrl);
   window.history.replaceState({}, document.title, "/private/admin.html");
-} else {
-  // 3️⃣ Si no viene por URL → intentar leerlo del localStorage
-  adminToken = localStorage.getItem("admin_token");
 }
 
-// 4️⃣ Si no existe en ningún lado → redirigir
+const adminToken = localStorage.getItem("admin_token");
+
 if (!adminToken) {
-  window.location.href = `${BACKEND_URL}`;
+  window.location.href = "/";
 }
 
 
