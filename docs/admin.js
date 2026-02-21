@@ -36,30 +36,27 @@ if (tokenFromUrl) {
 
 const adminToken = localStorage.getItem("admin_token");
 
-if (!adminToken) {
-  window.location.href = "/";
-}
-
 
 // 3️⃣ Verificar token
 async function verificarAcceso() {
   const token = localStorage.getItem("admin_token");
-  if (!token) return window.location.href = "/"; // Redirige si no hay token
+  if (!token) return;
 
   try {
     const res = await fetch(`${BACKEND_URL}/api/verify`, {
       headers: {
-        "Authorization": `Bearer ${adminTokentoken}`,
+        Authorization: `Bearer ${token}`,
         "x-api-key": "DRepartos090399202687yu654op987xyz"
       }
     });
 
     if (!res.ok) {
-      localStorage.removeItem("admin_token");
-      window.location.href = "/";
+      console.warn("Token inválido, pero no redirigimos automáticamente");
+      return;
     }
-  } catch {
-    window.location.href = "/";
+
+  } catch (err) {
+    console.warn("No se pudo verificar token");
   }
 }
 
