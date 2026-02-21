@@ -746,9 +746,9 @@ body {
   background: var(--accent-secondary);
 }
 
-/* ==================== CLIENTES ==================== */
+/* ==================== CLIENTE ==================== */
 
-.clientes-grid {
+.cliente-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1.5rem;
@@ -932,7 +932,7 @@ body {
   color: white;
 }
 
-#buscadorClientes {
+#buscadorCliente {
   padding: 0.9rem 1rem;
   border-radius: 12px;
   border: 1px solid var(--border-color);
@@ -942,7 +942,7 @@ body {
   transition: 0.3s ease;
 }
 
-#buscadorClientes:focus {
+#buscadorCliente:focus {
   outline: none;
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 3px rgba(0,180,216,0.15);

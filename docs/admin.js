@@ -223,9 +223,9 @@ async function cargarPedidos() {
 /* =========================
    CARGAR CLIENTE
 ========================= */
-async function cargarClientes() {
+async function cargarCliente() {
   try {
-    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes`);
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/cliente`);
     if (!res.ok) throw new Error("Error cliente");
 
     const cliente = await res.json();
@@ -233,29 +233,29 @@ async function cargarClientes() {
     if (!Array.isArray(cliente)) return;
 
     clienteGlobal = cliente;
-    renderClientes();
+    renderCliente();
 
   } catch (err) {
     console.error("Error cargando cliente:", err);
   }
 }
 
-function renderClientes() {
-  if (!clientesContainer) return;
+function renderCliente() {
+  if (!clienteContainer) return;
 
   let filtrados = clienteGlobal.filter(c =>
     c.nombre.toLowerCase().includes(filtroBusqueda.toLowerCase()) ||
     (c.usuario?.email || "").toLowerCase().includes(filtroBusqueda.toLowerCase())
   );
 
-  const totalClientes = document.getElementById("totalClientes");
-  if (totalClientes) totalClientes.innerText = filtrados.length;
+  const totalCliente = document.getElementById("totalCliente");
+  if (totalCliente) totalCliente.innerText = filtrados.length;
 
   const inicio = (paginaActual - 1) * clientePorPagina;
   const fin = inicio + clientePorPagina;
   const clientePagina = filtrados.slice(inicio, fin);
 
-  if (!clientesPagina.length) {
+  if (!clientePagina.length) {
     clienteContainer.innerHTML = "<p>No hay cliente</p>";
     return;
   }
@@ -306,7 +306,7 @@ function renderPaginacion(total) {
 
 function cambiarPagina(pagina) {
   paginaActual = pagina;
-  renderClientes();
+  renderCliente();
   }
 
 
@@ -315,7 +315,7 @@ function cambiarPagina(pagina) {
 ========================= */
 async function abrirVistaCliente(clienteId) {
   try {
-    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes/${clienteId}`);
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/cliente/${clienteId}`);
     if (!res.ok) throw new Error("Error detalle");
 
     const cliente = await res.json();
@@ -356,9 +356,9 @@ async function eliminarCliente(id) {
   if (!confirm("¿Seguro que quieres eliminar este cliente?")) return;
 
   try {
-    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes/${id}`, { method: "DELETE" });
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/cliente/${id}`, { method: "DELETE" });
     if (!res.ok) throw new Error("Error eliminando");
-    cargarClientes();
+    cargarCliente();
   } catch (err) {
     console.error(err);
   }
@@ -374,7 +374,7 @@ document.addEventListener("DOMContentLoaded", () => {
   preparacionEl = document.getElementById("preparacion");
   listosEl = document.getElementById("listos");
   estadoFiltro = document.getElementById("estadoFiltro");
-  clienteContainer = document.getElementById("clientesContainer");
+  clienteContainer = document.getElementById("clienteContainer");
   clienteDetalleContainer = document.getElementById("clienteDetalle");
 
   actualizarPanelFechaHora();
@@ -385,12 +385,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnCrear = document.getElementById("btnCrearCliente");
   const cerrarBtn = document.getElementById("cerrarModalCliente");
   const form = document.getElementById("formCrearCliente");
-  const buscador = document.getElementById("buscadorClientes");
+  const buscador = document.getElementById("buscadorCliente");
 
   buscador?.addEventListener("input", (e) => {
     filtroBusqueda = e.target.value;
     paginaActual = 1;
-    renderClientes();
+    renderCliente();
   });
 
   btnCrear?.addEventListener("click", () => modal.style.display = "flex");
@@ -407,14 +407,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       if (clienteEditandoId) {
-        const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes/${clienteEditandoId}`, {
+        const res = await fetchSeguro(`${BACKEND_URL}/api/admin/cliente/${clienteEditandoId}`, {
           method: "PUT",
           body: JSON.stringify({ nombre, telefono, direccion, notas })
         });
         if (!res.ok) throw new Error("Error editando cliente");
         clienteEditandoId = null;
       } else {
-        const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes`, {
+        const res = await fetchSeguro(`${BACKEND_URL}/api/admin/cliente`, {
           method: "POST",
           body: JSON.stringify({ nombre, email, telefono, direccion, notas })
         });
@@ -423,7 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       modal.style.display = "none";
       form.reset();
-      cargarClientes();
+      cargarCliente();
     } catch (err) {
       console.error("Error guardando cliente:", err);
       alert("Error guardando cliente");
@@ -445,10 +445,10 @@ document.querySelectorAll(".sidebar li").forEach(item => {
     const seccion = item.dataset.seccion;
 
     const seccionPedidos = document.getElementById("seccionPedidos");
-    const seccionClientes = document.getElementById("seccionClientes");
+    const seccionCliente = document.getElementById("seccionCliente");
 
     if (seccionPedidos) seccionPedidos.style.display = "none";
-    if (seccionClientes) seccionClientes.style.display = "none";
+    if (seccionCliente) seccionCliente.style.display = "none";
 
     if (seccion === "pedidos") {
       seccionPedidos.style.display = "block";
@@ -456,11 +456,11 @@ document.querySelectorAll(".sidebar li").forEach(item => {
         "<span>📦</span><span>Gestión de Pedidos</span>";
     }
 
-    if (seccion === "clientes") {
-      seccionClientes.style.display = "block";
+    if (seccion === "cliente") {
+      seccionCliente.style.display = "block";
       document.getElementById("mainTitle").innerHTML =
-        "<span>👥</span><span>Gestión de Clientes</span>";
-      cargarClientes();
+        "<span>👥</span><span>Gestión de Cliente</span>";
+      cargarCliente();
     }
 
   });
@@ -468,8 +468,8 @@ document.querySelectorAll(".sidebar li").forEach(item => {
 
 
   cargarPedidos();
-  cargarClientes();
+  cargarCliente();
 
   setInterval(cargarPedidos, 10000);
-  setInterval(cargarClientes, 15000);
+  setInterval(cargarCliente, 15000);
 });
