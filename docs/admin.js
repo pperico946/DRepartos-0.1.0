@@ -23,23 +23,27 @@ const BACKEND_URL =
     ? "http://localhost:3003"
     : "https://drepartos.onrender.com";
 
-// 2️⃣ Leer token desde localStorage
-const adminToken = localStorage.getItem("admin_token");
-if (!adminToken) {
-  window.location.href = `${BACKEND_URL}`; // Redirige a login
+/* =========================
+   TOKEN DESDE URL O LOCALSTORAGE
+========================= */
+
+// 1️⃣ Leer token desde URL
+const urlParams = new URLSearchParams(window.location.search);
+let adminToken = urlParams.get("token");
+
+// 2️⃣ Si viene por URL → guardarlo en localStorage
+if (adminToken) {
+  localStorage.setItem("admin_token", adminToken);
+  // limpiar la URL
+  window.history.replaceState({}, document.title, "/private/admin.html");
+} else {
+  // 3️⃣ Si no viene por URL → intentar leerlo del localStorage
+  adminToken = localStorage.getItem("admin_token");
 }
 
-
-/* =========================
-   TOKEN DESDE URL
-========================= */
-// 1️⃣ Si venimos con token en URL (antiguo), guardarlo
-const urlParams = new URLSearchParams(window.location.search);
-const tokenFromUrl = urlParams.get("token");
-if (tokenFromUrl) {
-  localStorage.setItem("admin_token", tokenFromUrl);
-  // Limpiar URL para que no quede en el historial
-  window.history.replaceState({}, document.title, "/private/admin.html");
+// 4️⃣ Si no existe en ningún lado → redirigir
+if (!adminToken) {
+  window.location.href = `${BACKEND_URL}`;
 }
 
 
@@ -51,7 +55,7 @@ async function verificarAcceso() {
   try {
     const res = await fetch(`${BACKEND_URL}/api/verify`, {
       headers: {
-        "Authorization": `Bearer ${token}`,
+        "Authorization": `Bearer ${adminTokentoken}`,
         "x-api-key": "DRepartos090399202687yu654op987xyz"
       }
     });
