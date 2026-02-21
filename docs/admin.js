@@ -7,14 +7,14 @@ let listaPedidosTabla,
   preparacionEl,
   listosEl,
   estadoFiltro,
-  clientesContainer,
+  clienteContainer,
   clienteDetalleContainer;
 
-let clientesGlobal = [];
+let clienteGlobal = [];
 let paginaActual = 1;
 let filtroBusqueda = "";
 let clienteEditandoId = null;
-const clientesPorPagina = 6;
+const clientePorPagina = 6;
 
 const BACKEND_URL =
   window.location.hostname === "localhost" ||
@@ -221,29 +221,29 @@ async function cargarPedidos() {
 
 
 /* =========================
-   CARGAR CLIENTES
+   CARGAR CLIENTE
 ========================= */
 async function cargarClientes() {
   try {
     const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes`);
-    if (!res.ok) throw new Error("Error clientes");
+    if (!res.ok) throw new Error("Error cliente");
 
-    const clientes = await res.json();
+    const cliente = await res.json();
 
-    if (!Array.isArray(clientes)) return;
+    if (!Array.isArray(cliente)) return;
 
-    clientesGlobal = clientes;
+    clienteGlobal = cliente;
     renderClientes();
 
   } catch (err) {
-    console.error("Error cargando clientes:", err);
+    console.error("Error cargando cliente:", err);
   }
 }
 
 function renderClientes() {
   if (!clientesContainer) return;
 
-  let filtrados = clientesGlobal.filter(c =>
+  let filtrados = clienteGlobal.filter(c =>
     c.nombre.toLowerCase().includes(filtroBusqueda.toLowerCase()) ||
     (c.usuario?.email || "").toLowerCase().includes(filtroBusqueda.toLowerCase())
   );
@@ -251,16 +251,16 @@ function renderClientes() {
   const totalClientes = document.getElementById("totalClientes");
   if (totalClientes) totalClientes.innerText = filtrados.length;
 
-  const inicio = (paginaActual - 1) * clientesPorPagina;
-  const fin = inicio + clientesPorPagina;
-  const clientesPagina = filtrados.slice(inicio, fin);
+  const inicio = (paginaActual - 1) * clientePorPagina;
+  const fin = inicio + clientePorPagina;
+  const clientePagina = filtrados.slice(inicio, fin);
 
   if (!clientesPagina.length) {
-    clientesContainer.innerHTML = "<p>No hay clientes</p>";
+    clienteContainer.innerHTML = "<p>No hay cliente</p>";
     return;
   }
 
-  clientesContainer.innerHTML = clientesPagina.map(c => `
+  clienteContainer.innerHTML = clientePagina.map(c => `
     <div class="cliente-card">
       <h3>${c.nombre}</h3>
       <p>Email: ${c.usuario?.email || '-'}</p>
@@ -288,7 +288,7 @@ function renderClientes() {
 }
 
 function renderPaginacion(total) {
-  const totalPaginas = Math.ceil(total / clientesPorPagina);
+  const totalPaginas = Math.ceil(total /PorPagina);
   let html = `<div style="margin-top:20px; display:flex; gap:8px;">`;
 
   for (let i = 1; i <= totalPaginas; i++) {
@@ -300,7 +300,7 @@ function renderPaginacion(total) {
   }
 
   html += `</div>`;
-  clientesContainer.innerHTML += html;
+  clienteContainer.innerHTML += html;
   }
 
 
@@ -334,7 +334,7 @@ async function abrirVistaCliente(clienteId) {
 }
 
 async function editarCliente(id) {
-  const cliente = clientesGlobal.find(c => c.id === id);
+  const cliente = clienteGlobal.find(c => c.id === id);
   if (!cliente) return;
 
   clienteEditandoId = id;
@@ -374,7 +374,7 @@ document.addEventListener("DOMContentLoaded", () => {
   preparacionEl = document.getElementById("preparacion");
   listosEl = document.getElementById("listos");
   estadoFiltro = document.getElementById("estadoFiltro");
-  clientesContainer = document.getElementById("clientesContainer");
+  clienteContainer = document.getElementById("clientesContainer");
   clienteDetalleContainer = document.getElementById("clienteDetalle");
 
   actualizarPanelFechaHora();
