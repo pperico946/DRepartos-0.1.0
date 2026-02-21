@@ -129,9 +129,8 @@ async function loginEmpresa(event) {
    // Guardar token y usuario según rol
     if (data.rol === "admin") {
     localStorage.setItem("admin_token", data.token);
+     window.location.href = "https://drepartos.onrender.com/private/admin.html";
     localStorage.setItem("usuario", JSON.stringify(data));
-  // Redirigir SIN pasar token por URL
-    window.location.href = "https://drepartos.onrender.com/private/admin.html";
   } else if (data.rol === "empleado") {
     localStorage.setItem("empleado_token", data.token);
     window.location.href = `${BACKEND_URL}/private/empleado.html`;
