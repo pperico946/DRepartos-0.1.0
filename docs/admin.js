@@ -23,7 +23,11 @@ const BACKEND_URL =
     ? "http://localhost:3003"
     : "https://drepartos.onrender.com";
 
-const token = localStorage.getItem("admin_token");
+// 2️⃣ Leer token desde localStorage
+const adminToken = localStorage.getItem("admin_token");
+if (!adminToken) {
+  window.location.href = `${BACKEND_URL}`; // Redirige a login
+}
 
 
 /* =========================
@@ -38,11 +42,6 @@ if (tokenFromUrl) {
   window.history.replaceState({}, document.title, "/private/admin.html");
 }
 
-// 2️⃣ Leer token desde localStorage
-const adminToken = localStorage.getItem("admin_token");
-if (!adminToken) {
-  window.location.href = `${BACKEND_URL}`; // Redirige a login
-}
 
 // 3️⃣ Verificar token
 async function verificarAcceso() {
