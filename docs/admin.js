@@ -16,7 +16,6 @@ let filtroBusqueda = "";
 let clienteEditandoId = null;
 
 const clientePorPagina = 6;
-const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
 const BACKEND_URL =
   window.location.hostname === "localhost" ||
   window.location.hostname === "127.0.0.1"
@@ -224,7 +223,6 @@ function actualizarTarjetas(pedidos) {
 ========================= */
 async function cargarPedidos() {
   try {
-    if (!adminData?.empresa?.id) return;
 
     const res = await fetchSeguro(
       `${BACKEND_URL}/api/admin/pedidos`
