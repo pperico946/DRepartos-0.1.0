@@ -36,6 +36,34 @@ if (tokenFromUrl) {
 
 const adminToken = localStorage.getItem("admin_token");
 
+// ==========================
+// UTILIDADES FETCH PROTEGIDO
+// ==========================
+function getAuthHeaders() {
+  const token = localStorage.getItem("admin_token");
+
+  return {
+    "Authorization": `Bearer ${token}`,
+    "x-api-key": "DRepartos090399202687yu654op987xyz",
+    "Content-Type": "application/json"
+  };
+}
+
+async function fetchSeguro(url, options = {}) {
+  const config = {
+    ...options,
+    headers: { ...getAuthHeaders(), ...(options.headers || {}) }
+  };
+
+  const res = await fetch(url, config);
+
+  if (res.status === 401 || res.status === 403) {
+    console.warn("Token inválido en fetchSeguro");
+  }
+
+  return res;
+}
+
 
 // 3️⃣ Verificar token
 async function verificarAcceso() {
