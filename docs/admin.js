@@ -287,12 +287,15 @@ async function cargarCliente() {
   }
 }
 
+/* =========================
+   RENDER CLIENTE - CORREGIDO
+========================= */
 function renderCliente() {
   if (!clienteContainer) return;
 
   let filtrados = clienteGlobal.filter(c =>
     c.nombre.toLowerCase().includes(filtroBusqueda.toLowerCase()) ||
-    (c.usuario?.email || "").toLowerCase().includes(filtroBusqueda.toLowerCase())
+    (c.email || "").toLowerCase().includes(filtroBusqueda.toLowerCase()) // ✅ CORREGIDO: c.email en lugar de c.usuario?.email
   );
 
   const totalCliente = document.getElementById("totalCliente");
@@ -303,36 +306,38 @@ function renderCliente() {
   const clientePagina = filtrados.slice(inicio, fin);
 
   if (!clientePagina.length) {
-    clienteContainer.innerHTML = "<p>No hay cliente</p>";
+    clienteContainer.innerHTML = "<p>No hay clientes</p>";
     return;
   }
 
   clienteContainer.innerHTML = clientePagina.map(c => `
     <div class="cliente-card">
       <h3>${c.nombre}</h3>
-      <p>Email: ${c.usuario?.email || '-'}</p>
+      <p>Email: ${c.email || '-'}</p>  
       <p>Tel: ${c.telefono || '-'}</p>
+      ${c.link_acceso ? `<p><small>Link: <a href="${c.link_acceso}" target="_blank">Acceso</a></small></p>` : ''}
       <div style="margin-top:10px; display:flex; gap:8px;">
-      <button class="btn-editar" data-id="${c.id}">Editar</button>
-      <button class="btn-eliminar-cliente" data-id="${c.id}">Eliminar</button>
+        <button class="btn-editar" data-id="${c.id}">Editar</button>
+        <button class="btn-eliminar-cliente" data-id="${c.id}">Eliminar</button>
       </div>
     </div>
   `).join("");
 
   document.querySelectorAll(".btn-editar").forEach(btn => {
     btn.addEventListener("click", () => {
-    editarCliente(Number(btn.dataset.id));
-   });
- });
+      editarCliente(Number(btn.dataset.id));
+    });
+  });
 
   document.querySelectorAll(".btn-eliminar-cliente").forEach(btn => {
     btn.addEventListener("click", () => {
-    eliminarCliente(Number(btn.dataset.id));
-   });
- });
+      eliminarCliente(Number(btn.dataset.id));
+    });
+  });
 
   renderPaginacion(filtrados.length);
 }
+
 
 function renderPaginacion(total) {
   // ✅ CORREGIDO: clientePorPagina en lugar de PorPagina
