@@ -41,6 +41,12 @@ const adminToken = localStorage.getItem("admin_token");
 // ==========================
 function getAuthHeaders() {
   const token = localStorage.getItem("admin_token");
+  
+  if (!token) {
+    console.error("No hay token disponible");
+    window.location.href = "/"; // Redirigir al login
+    throw new Error("No hay token de autenticación");
+  }
 
   return {
     "Authorization": `Bearer ${token}`,
@@ -57,18 +63,28 @@ async function fetchSeguro(url, options = {}) {
 
   const res = await fetch(url, config);
 
+  // ✅ CORREGIDO: Ahora SÍ lanza error cuando token inválido
   if (res.status === 401 || res.status === 403) {
-    console.warn("Token inválido en fetchSeguro");
+    console.error("Token inválido o expirado");
+    localStorage.removeItem("admin_token"); // Limpiar token inválido
+    alert("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+    window.location.href = "/"; // Redirigir al login
+    throw new Error("Token inválido");
   }
 
   return res;
 }
 
 
-// 3️⃣ Verificar token
+// 3️⃣ Verificar token al cargar
 async function verificarAcceso() {
   const token = localStorage.getItem("admin_token");
-  if (!token) return;
+  
+  if (!token) {
+    console.warn("No hay token, redirigiendo al login");
+    window.location.href = "/";
+    return;
+  }
 
   try {
     const res = await fetch(`${BACKEND_URL}/api/verify`, {
@@ -79,12 +95,16 @@ async function verificarAcceso() {
     });
 
     if (!res.ok) {
-      console.warn("Token inválido, pero no redirigimos automáticamente");
+      console.error("Token inválido al verificar acceso");
+      localStorage.removeItem("admin_token");
+      window.location.href = "/";
       return;
     }
 
   } catch (err) {
-    console.warn("No se pudo verificar token");
+    console.error("Error al verificar token:", err);
+    localStorage.removeItem("admin_token");
+    window.location.href = "/";
   }
 }
 
@@ -315,7 +335,8 @@ function renderCliente() {
 }
 
 function renderPaginacion(total) {
-  const totalPaginas = Math.ceil(total /PorPagina);
+  // ✅ CORREGIDO: clientePorPagina en lugar de PorPagina
+  const totalPaginas = Math.ceil(total / clientePorPagina);
   let html = `<div style="margin-top:20px; display:flex; gap:8px;">`;
 
   for (let i = 1; i <= totalPaginas; i++) {
@@ -328,7 +349,7 @@ function renderPaginacion(total) {
 
   html += `</div>`;
   clienteContainer.innerHTML += html;
-  }
+}
 
 
 function cambiarPagina(pagina) {
