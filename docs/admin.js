@@ -614,6 +614,22 @@ async function cargarPedidosCliente(usuarioId) {
     return;
   }
 
+  clienteEditandoId = id;
+
+  const modal = document.getElementById("modalCrearCliente");
+  
+  document.getElementById("nuevoNombre").value = cliente.nombre;
+  document.getElementById("nuevoEmail").value = cliente.email || "";
+  document.getElementById("nuevoEmail").disabled = true;
+  document.getElementById("nuevoTelefono").value = cliente.telefono || "";
+  document.getElementById("nuevoDireccion").value = cliente.direccion || "";
+  document.getElementById("nuevoNotas").value = cliente.notas || "";
+  
+  document.getElementById("tituloModalCliente").textContent = "✏️ Editar Cliente";
+  document.getElementById("btnSubmitCliente").textContent = "Guardar Cambios";
+  
+  modal.style.display = "flex";
+};
 
 /* =========================
    EDITAR CLIENTE
