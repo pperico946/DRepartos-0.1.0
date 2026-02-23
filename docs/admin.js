@@ -294,6 +294,9 @@ async function cargarCliente() {
   }
 }
 
+/* =========================
+   RENDER CLIENTES
+========================= */
 function renderCliente() {
   if (!clienteContainer) return;
 
@@ -314,42 +317,65 @@ function renderCliente() {
     return;
   }
 
-  clienteContainer.innerHTML = clientePagina.map(c => `
-    <div class="cliente-card">
-      <h3>${c.nombre}</h3>
-      <p><strong>Email:</strong> ${c.email || '-'}</p>
-      <p><strong>Teléfono:</strong> ${c.telefono || '-'}</p>
-      ${c.link_acceso ? `<p><small><strong>Link:</strong> <a href="${c.link_acceso}" target="_blank" style="color: var(--accent-primary);">Acceso directo</a></small></p>` : ''}
-      <div style="margin-top:10px; display:flex; gap:8px;">
-        <button class="btn-editar" data-id="${c.id}">Editar</button>
-        <button class="btn-eliminar-cliente" data-id="${c.id}">Eliminar</button>
-      </div>
+  clienteContainer.innerHTML = `
+    <div class="cliente-grid">
+      ${clientePagina.map(c => `
+        <div class="cliente-card">
+          <div class="cliente-info-grid">
+            <div class="cliente-info-item">
+              <span>Nombre</span>
+              <strong>${c.nombre}</strong>
+            </div>
+            <div class="cliente-info-item">
+              <span>Email</span>
+              <strong>${c.email || '-'}</strong>
+            </div>
+            <div class="cliente-info-item">
+              <span>Teléfono</span>
+              <strong>${c.telefono || '-'}</strong>
+            </div>
+            ${c.direccion ? `
+              <div class="cliente-info-item">
+                <span>Dirección</span>
+                <strong>${c.direccion}</strong>
+              </div>
+            ` : ''}
+            ${c.link_acceso ? `
+              <div class="cliente-info-item">
+                <span>Link de Acceso</span>
+                <a href="${c.link_acceso}" target="_blank" style="color: var(--accent-primary); word-break: break-all; font-size: 0.85rem;">🔗 Acceso directo</a>
+              </div>
+            ` : ''}
+          </div>
+          <div class="cliente-acciones">
+            <button class="btn-editar" onclick="editarCliente(${c.id})">
+              ✏️ Editar
+            </button>
+            <button class="btn-eliminar-cliente" onclick="eliminarCliente(${c.id})">
+              🗑️ Eliminar
+            </button>
+          </div>
+        </div>
+      `).join('')}
     </div>
-  `).join("");
-
-  document.querySelectorAll(".btn-editar").forEach(btn => {
-    btn.addEventListener("click", () => {
-      editarCliente(Number(btn.dataset.id));
-    });
-  });
-
-  document.querySelectorAll(".btn-eliminar-cliente").forEach(btn => {
-    btn.addEventListener("click", () => {
-      eliminarCliente(Number(btn.dataset.id));
-    });
-  });
+  `;
 
   renderPaginacion(filtrados.length);
 }
 
+/* =========================
+   PAGINACIÓN
+========================= */
 function renderPaginacion(total) {
   const totalPaginas = Math.ceil(total / clientePorPagina);
-  let html = `<div style="margin-top:20px; display:flex; gap:8px; justify-content:center;">`;
+  if (totalPaginas <= 1) return;
+
+  let html = `<div class="paginacion">`;
 
   for (let i = 1; i <= totalPaginas; i++) {
     html += `
       <button 
-        style="padding:8px 12px; border-radius:6px; cursor:pointer; ${i === paginaActual ? 'background:var(--accent-primary); color:white; font-weight:bold;' : 'background:var(--bg-secondary); color:var(--text-primary);'}" 
+        class="btn-pagina ${i === paginaActual ? 'active' : ''}" 
         onclick="cambiarPagina(${i})">
         ${i}
       </button>
@@ -360,52 +386,69 @@ function renderPaginacion(total) {
   clienteContainer.innerHTML += html;
 }
 
-function cambiarPagina(pagina) {
+// ✅ HACER GLOBAL
+window.cambiarPagina = function(pagina) {
   paginaActual = pagina;
   renderCliente();
-}
+};
 
 /* =========================
    EDITAR CLIENTE
 ========================= */
-async function editarCliente(id) {
+window.editarCliente = async function(id) {
+  console.log("✏️ Editando cliente:", id);
+  
   const cliente = clienteGlobal.find(c => c.id === id);
-  if (!cliente) return;
+  if (!cliente) {
+    console.error("❌ Cliente no encontrado");
+    alert("Cliente no encontrado");
+    return;
+  }
 
   clienteEditandoId = id;
 
+  const modal = document.getElementById("modalCrearCliente");
+  
   document.getElementById("nuevoNombre").value = cliente.nombre;
   document.getElementById("nuevoEmail").value = cliente.email || "";
-  document.getElementById("nuevoEmail").disabled = true; // No permitir cambiar email
+  document.getElementById("nuevoEmail").disabled = true;
   document.getElementById("nuevoTelefono").value = cliente.telefono || "";
   document.getElementById("nuevoDireccion").value = cliente.direccion || "";
   document.getElementById("nuevoNotas").value = cliente.notas || "";
   
-  document.getElementById("tituloModalCliente").textContent = "Editar Cliente";
+  document.getElementById("tituloModalCliente").textContent = "✏️ Editar Cliente";
   document.getElementById("btnSubmitCliente").textContent = "Guardar Cambios";
-  document.getElementById("modalCrearCliente").style.display = "flex";
-}
+  
+  modal.style.display = "flex";
+};
 
 /* =========================
    ELIMINAR CLIENTE
 ========================= */
-async function eliminarCliente(id) {
-  if (!confirm("¿Seguro que quieres eliminar este cliente?")) return;
+window.eliminarCliente = async function(id) {
+  console.log("🗑️ Eliminando cliente:", id);
+  
+  if (!confirm("¿Seguro que quieres eliminar este cliente? Esta acción no se puede deshacer.")) return;
 
   try {
     const res = await fetchSeguro(`${BACKEND_URL}/api/admin/cliente/${id}`, { 
       method: "DELETE" 
     });
     
-    if (!res.ok) throw new Error("Error eliminando");
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || "Error eliminando");
+    }
     
-    alert("Cliente eliminado correctamente");
+    console.log("✅ Cliente eliminado");
+    alert("✅ Cliente eliminado correctamente");
     cargarCliente();
+    
   } catch (err) {
     console.error("❌ Error eliminando cliente:", err);
-    alert("Error eliminando cliente");
+    alert("❌ Error eliminando cliente: " + err.message);
   }
-}
+};
 
 /* =========================
    INICIALIZACIÓN GENERAL
@@ -437,10 +480,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   btnCrear?.addEventListener("click", () => {
-    // Resetear form para crear nuevo
     clienteEditandoId = null;
+    form.reset();
     document.getElementById("nuevoEmail").disabled = false;
-    document.getElementById("tituloModalCliente").textContent = "Crear Nuevo Cliente";
+    document.getElementById("tituloModalCliente").textContent = "➕ Crear Nuevo Cliente";
     document.getElementById("btnSubmitCliente").textContent = "Crear Cliente";
     modal.style.display = "flex";
   });
@@ -449,6 +492,15 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.style.display = "none";
     form.reset();
     clienteEditandoId = null;
+  });
+
+  // Cerrar modal al hacer click fuera
+  modal?.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+      form.reset();
+      clienteEditandoId = null;
+    }
   });
 
   form?.addEventListener("submit", async (e) => {
@@ -465,6 +517,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const btnSubmit = document.getElementById("btnSubmitCliente");
+    const textoOriginal = btnSubmit.textContent;
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = "Guardando...";
+
     try {
       if (clienteEditandoId) {
         // EDITAR
@@ -478,7 +535,7 @@ document.addEventListener("DOMContentLoaded", () => {
           throw new Error(errorData.error || "Error editando cliente");
         }
         
-        alert("Cliente actualizado correctamente");
+        alert("✅ Cliente actualizado correctamente");
         clienteEditandoId = null;
       } else {
         // CREAR NUEVO
@@ -493,15 +550,37 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const data = await res.json();
-        alert(`Cliente creado correctamente.\nContraseña temporal: ${data.passwordTemporal}\nLink de acceso: ${data.linkAcceso}`);
+        
+        // Modal con info del cliente creado
+        const infoHtml = `
+          <div class="modal-info-cliente">
+            <div class="modal-info-content">
+              <h3>✅ Cliente Creado Exitosamente</h3>
+              <div class="info-item">
+                <span>Contraseña Temporal:</span>
+                <code>${data.passwordTemporal}</code>
+              </div>
+              <div class="info-item">
+                <span>Link de Acceso:</span>
+                <a href="${data.linkAcceso}" target="_blank">${data.linkAcceso}</a>
+              </div>
+              <button onclick="this.closest('.modal-info-cliente').remove()" class="btn-cerrar-info">Entendido</button>
+            </div>
+          </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', infoHtml);
       }
 
       modal.style.display = "none";
       form.reset();
       cargarCliente();
+      
     } catch (err) {
       console.error("❌ Error guardando cliente:", err);
-      alert("Error guardando cliente: " + err.message);
+      alert("❌ Error guardando cliente: " + err.message);
+    } finally {
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = textoOriginal;
     }
   });
 
@@ -510,7 +589,6 @@ document.addEventListener("DOMContentLoaded", () => {
   ========================= */
   document.querySelectorAll(".sidebar li").forEach(item => {
     item.addEventListener("click", () => {
-      // Quitar active
       document.querySelectorAll(".sidebar li")
         .forEach(li => li.classList.remove("active"));
 
@@ -544,5 +622,5 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarPedidos();
   
   // Actualizar periódicamente
-  setInterval(cargarPedidos, 30000); // Cada 30 segundos
+  setInterval(cargarPedidos, 30000);
 });
