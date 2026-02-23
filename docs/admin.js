@@ -367,9 +367,7 @@ function renderCliente() {
   document.querySelectorAll('.cliente-card').forEach(card => {
     const clienteId = parseInt(card.dataset.clienteId);
     
-    // Click en la card para ver detalle
     card.addEventListener('click', (e) => {
-      // No abrir si se hace click en botones
       if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
       abrirVistaCliente(clienteId);
     });
@@ -424,7 +422,6 @@ function renderPaginacion(total) {
   html += `</div>`;
   clienteContainer.innerHTML += html;
 
-  // ✅ Event listeners para paginación
   document.querySelectorAll('.btn-pagina').forEach(btn => {
     btn.addEventListener('click', () => {
       const pagina = parseInt(btn.dataset.pagina);
@@ -445,7 +442,6 @@ async function abrirVistaCliente(clienteId) {
   try {
     console.log("👁️ Abriendo detalle del cliente:", clienteId);
     
-    // Obtener datos del cliente
     const cliente = clienteGlobal.find(c => c.id === clienteId);
     if (!cliente) {
       alert("Cliente no encontrado");
@@ -454,7 +450,6 @@ async function abrirVistaCliente(clienteId) {
 
     console.log("✅ Cliente obtenido:", cliente);
 
-    // Mostrar panel de detalle
     if (clienteDetalleContainer) {
       clienteDetalleContainer.style.display = "block";
       
@@ -507,12 +502,10 @@ async function abrirVistaCliente(clienteId) {
         </div>
       `;
 
-      // Event listener para cerrar
       document.querySelector('.btn-cerrar-detalle').addEventListener('click', () => {
         clienteDetalleContainer.style.display = "none";
       });
 
-      // Cargar pedidos del cliente
       cargarPedidosCliente(cliente.usuario_id);
     }
 
@@ -532,7 +525,6 @@ async function cargarPedidosCliente(usuarioId) {
 
     const pedidos = await res.json();
     
-    // Filtrar pedidos de este cliente
     const pedidosCliente = pedidos.filter(p => p.cliente_id === usuarioId);
 
     const container = document.getElementById("pedidosCliente");
@@ -544,7 +536,6 @@ async function cargarPedidosCliente(usuarioId) {
       return;
     }
 
-    // Mostrar últimos 10 pedidos
     container.innerHTML = `
       <div class="tabla-pedidos-mini">
         <table>
@@ -605,30 +596,6 @@ async function cargarPedidosCliente(usuarioId) {
     if (container) container.innerHTML = "<p style='color: var(--danger);'>Error cargando pedidos</p>";
   }
 }
-  console.log("✏️ Editando cliente:", id);
-  
-  const cliente = clienteGlobal.find(c => c.id === id);
-  if (!cliente) {
-    console.error("❌ Cliente no encontrado");
-    alert("Cliente no encontrado");
-    return;
-  }
-
-  clienteEditandoId = id;
-
-  const modal = document.getElementById("modalCrearCliente");
-  
-  document.getElementById("nuevoNombre").value = cliente.nombre;
-  document.getElementById("nuevoEmail").value = cliente.email || "";
-  document.getElementById("nuevoEmail").disabled = true;
-  document.getElementById("nuevoTelefono").value = cliente.telefono || "";
-  document.getElementById("nuevoDireccion").value = cliente.direccion || "";
-  document.getElementById("nuevoNotas").value = cliente.notas || "";
-  
-  document.getElementById("tituloModalCliente").textContent = "✏️ Editar Cliente";
-  document.getElementById("btnSubmitCliente").textContent = "Guardar Cambios";
-  
-  modal.style.display = "flex";
 
 /* =========================
    EDITAR CLIENTE
@@ -681,7 +648,6 @@ async function eliminarCliente(id) {
     console.log("✅ Cliente eliminado");
     alert("✅ Cliente eliminado correctamente");
     
-    // Cerrar detalle si está abierto
     if (clienteDetalleContainer && clienteDetalleContainer.style.display === "block") {
       clienteDetalleContainer.style.display = "none";
     }
@@ -738,7 +704,6 @@ document.addEventListener("DOMContentLoaded", () => {
     clienteEditandoId = null;
   });
 
-  // Cerrar modal al hacer click fuera
   modal?.addEventListener("click", (e) => {
     if (e.target === modal) {
       modal.style.display = "none";
@@ -795,7 +760,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const data = await res.json();
         
-        // Modal con info del cliente creado
         const infoHtml = `
           <div class="modal-info-cliente">
             <div class="modal-info-content">
