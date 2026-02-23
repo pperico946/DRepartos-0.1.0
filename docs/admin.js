@@ -320,7 +320,7 @@ function renderCliente() {
   clienteContainer.innerHTML = `
     <div class="cliente-grid">
       ${clientePagina.map(c => `
-        <div class="cliente-card">
+        <div class="cliente-card" data-cliente-id="${c.id}">
           <div class="cliente-info-grid">
             <div class="cliente-info-item">
               <span>Nombre</span>
@@ -348,10 +348,13 @@ function renderCliente() {
             ` : ''}
           </div>
           <div class="cliente-acciones">
-            <button class="btn-editar" onclick="editarCliente(${c.id})">
+            <button class="btn-ver-detalle" data-id="${c.id}">
+              👁️ Ver Detalle
+            </button>
+            <button class="btn-editar" data-id="${c.id}">
               ✏️ Editar
             </button>
-            <button class="btn-eliminar-cliente" onclick="eliminarCliente(${c.id})">
+            <button class="btn-eliminar-cliente" data-id="${c.id}">
               🗑️ Eliminar
             </button>
           </div>
@@ -359,6 +362,42 @@ function renderCliente() {
       `).join('')}
     </div>
   `;
+
+  // ✅ Event listeners (no onclick inline)
+  document.querySelectorAll('.cliente-card').forEach(card => {
+    const clienteId = parseInt(card.dataset.clienteId);
+    
+    // Click en la card para ver detalle
+    card.addEventListener('click', (e) => {
+      // No abrir si se hace click en botones
+      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
+      abrirVistaCliente(clienteId);
+    });
+  });
+
+  document.querySelectorAll('.btn-ver-detalle').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = parseInt(btn.dataset.id);
+      abrirVistaCliente(id);
+    });
+  });
+
+  document.querySelectorAll('.btn-editar').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = parseInt(btn.dataset.id);
+      editarCliente(id);
+    });
+  });
+
+  document.querySelectorAll('.btn-eliminar-cliente').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = parseInt(btn.dataset.id);
+      eliminarCliente(id);
+    });
+  });
 
   renderPaginacion(filtrados.length);
 }
@@ -376,7 +415,7 @@ function renderPaginacion(total) {
     html += `
       <button 
         class="btn-pagina ${i === paginaActual ? 'active' : ''}" 
-        onclick="cambiarPagina(${i})">
+        data-pagina="${i}">
         ${i}
       </button>
     `;
@@ -384,18 +423,188 @@ function renderPaginacion(total) {
 
   html += `</div>`;
   clienteContainer.innerHTML += html;
+
+  // ✅ Event listeners para paginación
+  document.querySelectorAll('.btn-pagina').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pagina = parseInt(btn.dataset.pagina);
+      cambiarPagina(pagina);
+    });
+  });
 }
 
-// ✅ HACER GLOBAL
-window.cambiarPagina = function(pagina) {
+function cambiarPagina(pagina) {
   paginaActual = pagina;
   renderCliente();
-};
+}
 
 /* =========================
-   EDITAR CLIENTE
+   VER DETALLE CLIENTE
 ========================= */
-window.editarCliente = async function(id) {
+async function abrirVistaCliente(clienteId) {
+  try {
+    console.log("👁️ Abriendo detalle del cliente:", clienteId);
+    
+    // Obtener datos del cliente
+    const cliente = clienteGlobal.find(c => c.id === clienteId);
+    if (!cliente) {
+      alert("Cliente no encontrado");
+      return;
+    }
+
+    console.log("✅ Cliente obtenido:", cliente);
+
+    // Mostrar panel de detalle
+    if (clienteDetalleContainer) {
+      clienteDetalleContainer.style.display = "block";
+      
+      clienteDetalleContainer.innerHTML = `
+        <div class="cliente-detalle-card">
+          <div class="detalle-header">
+            <h2>📋 ${cliente.nombre}</h2>
+            <button class="btn-cerrar-detalle">✕ Cerrar</button>
+          </div>
+          
+          <div class="cliente-info-grid">
+            <div class="cliente-info-item">
+              <span>Email</span>
+              <strong>${cliente.email || '-'}</strong>
+            </div>
+            <div class="cliente-info-item">
+              <span>Teléfono</span>
+              <strong>${cliente.telefono || '-'}</strong>
+            </div>
+            ${cliente.direccion ? `
+              <div class="cliente-info-item">
+                <span>Dirección</span>
+                <strong>${cliente.direccion}</strong>
+              </div>
+            ` : ''}
+            ${cliente.notas ? `
+              <div class="cliente-info-item">
+                <span>Notas</span>
+                <strong>${cliente.notas}</strong>
+              </div>
+            ` : ''}
+            ${cliente.link_acceso ? `
+              <div class="cliente-info-item">
+                <span>Link de Acceso</span>
+                <a href="${cliente.link_acceso}" target="_blank" style="color:var(--accent-primary); word-break: break-all;">
+                  🔗 ${cliente.link_acceso}
+                </a>
+              </div>
+            ` : ''}
+            <div class="cliente-info-item">
+              <span>Fecha de Registro</span>
+              <strong>${formatFecha(cliente.created_at)}</strong>
+            </div>
+          </div>
+
+          <div class="detalle-pedidos">
+            <h3>📦 Últimos Pedidos</h3>
+            <div id="pedidosCliente" class="pedidos-loading">Cargando pedidos...</div>
+          </div>
+        </div>
+      `;
+
+      // Event listener para cerrar
+      document.querySelector('.btn-cerrar-detalle').addEventListener('click', () => {
+        clienteDetalleContainer.style.display = "none";
+      });
+
+      // Cargar pedidos del cliente
+      cargarPedidosCliente(cliente.usuario_id);
+    }
+
+  } catch (err) {
+    console.error("❌ Error abriendo detalle:", err);
+    alert("Error al cargar detalle del cliente");
+  }
+}
+
+/* =========================
+   CARGAR PEDIDOS DE UN CLIENTE
+========================= */
+async function cargarPedidosCliente(usuarioId) {
+  try {
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/pedidos`);
+    if (!res.ok) throw new Error("Error cargando pedidos");
+
+    const pedidos = await res.json();
+    
+    // Filtrar pedidos de este cliente
+    const pedidosCliente = pedidos.filter(p => p.cliente_id === usuarioId);
+
+    const container = document.getElementById("pedidosCliente");
+    
+    if (!container) return;
+
+    if (!pedidosCliente.length) {
+      container.innerHTML = "<p style='color: var(--text-secondary); padding: 1rem;'>Este cliente no tiene pedidos aún</p>";
+      return;
+    }
+
+    // Mostrar últimos 10 pedidos
+    container.innerHTML = `
+      <div class="tabla-pedidos-mini">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Pedido</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pedidosCliente.slice(0, 10).map(p => {
+              const estadoEmoji = {
+                'recibido': '📥',
+                'procesando': '⚙️',
+                'enviado': '🚚',
+                'entregado': '✅',
+                'cancelado': '❌'
+              };
+              
+              const estadoColor = {
+                'recibido': 'var(--success)',
+                'procesando': 'var(--warning)',
+                'enviado': 'var(--info)',
+                'entregado': 'var(--success)',
+                'cancelado': 'var(--danger)'
+              };
+
+              return `
+                <tr>
+                  <td style="white-space: nowrap;">${formatFecha(p.fecha)}</td>
+                  <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">${p.pedido_final}</td>
+                  <td>
+                    <span style="
+                      padding: 4px 10px; 
+                      border-radius: 6px; 
+                      font-size: 0.8rem; 
+                      font-weight: 600;
+                      background: ${estadoColor[p.estado]}22;
+                      color: ${estadoColor[p.estado]};
+                      white-space: nowrap;
+                    ">
+                      ${estadoEmoji[p.estado]} ${p.estado}
+                    </span>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      ${pedidosCliente.length > 10 ? `<p style="text-align: center; margin-top: 1rem; color: var(--text-secondary); font-size: 0.85rem;">Mostrando 10 de ${pedidosCliente.length} pedidos</p>` : ''}
+    `;
+
+  } catch (err) {
+    console.error("❌ Error cargando pedidos del cliente:", err);
+    const container = document.getElementById("pedidosCliente");
+    if (container) container.innerHTML = "<p style='color: var(--danger);'>Error cargando pedidos</p>";
+  }
+}
   console.log("✏️ Editando cliente:", id);
   
   const cliente = clienteGlobal.find(c => c.id === id);
@@ -420,12 +629,42 @@ window.editarCliente = async function(id) {
   document.getElementById("btnSubmitCliente").textContent = "Guardar Cambios";
   
   modal.style.display = "flex";
-};
+
+
+/* =========================
+   EDITAR CLIENTE
+========================= */
+async function editarCliente(id) {
+  console.log("✏️ Editando cliente:", id);
+  
+  const cliente = clienteGlobal.find(c => c.id === id);
+  if (!cliente) {
+    console.error("❌ Cliente no encontrado");
+    alert("Cliente no encontrado");
+    return;
+  }
+
+  clienteEditandoId = id;
+
+  const modal = document.getElementById("modalCrearCliente");
+  
+  document.getElementById("nuevoNombre").value = cliente.nombre;
+  document.getElementById("nuevoEmail").value = cliente.email || "";
+  document.getElementById("nuevoEmail").disabled = true;
+  document.getElementById("nuevoTelefono").value = cliente.telefono || "";
+  document.getElementById("nuevoDireccion").value = cliente.direccion || "";
+  document.getElementById("nuevoNotas").value = cliente.notas || "";
+  
+  document.getElementById("tituloModalCliente").textContent = "✏️ Editar Cliente";
+  document.getElementById("btnSubmitCliente").textContent = "Guardar Cambios";
+  
+  modal.style.display = "flex";
+}
 
 /* =========================
    ELIMINAR CLIENTE
 ========================= */
-window.eliminarCliente = async function(id) {
+async function eliminarCliente(id) {
   console.log("🗑️ Eliminando cliente:", id);
   
   if (!confirm("¿Seguro que quieres eliminar este cliente? Esta acción no se puede deshacer.")) return;
@@ -442,13 +681,19 @@ window.eliminarCliente = async function(id) {
     
     console.log("✅ Cliente eliminado");
     alert("✅ Cliente eliminado correctamente");
+    
+    // Cerrar detalle si está abierto
+    if (clienteDetalleContainer && clienteDetalleContainer.style.display === "block") {
+      clienteDetalleContainer.style.display = "none";
+    }
+    
     cargarCliente();
     
   } catch (err) {
     console.error("❌ Error eliminando cliente:", err);
     alert("❌ Error eliminando cliente: " + err.message);
   }
-};
+}
 
 /* =========================
    INICIALIZACIÓN GENERAL
