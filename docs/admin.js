@@ -272,7 +272,7 @@ async function cargarPedidos() {
 ========================= */
 async function cargarCliente() {
   try {
-    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/cliente`);
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes`);
     if (!res.ok) throw new Error("Error cliente");
 
     const cliente = await res.json();
@@ -368,7 +368,7 @@ function cambiarPagina(pagina) {
 ========================= */
 async function abrirVistaCliente(clienteId) {
   try {
-    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/cliente/${clienteId}`);
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes/${clienteId}`);
     if (!res.ok) throw new Error("Error detalle");
 
     const cliente = await res.json();
@@ -409,7 +409,7 @@ async function eliminarCliente(id) {
   if (!confirm("¿Seguro que quieres eliminar este cliente?")) return;
 
   try {
-    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/cliente/${id}`, { method: "DELETE" });
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes/${id}`, { method: "DELETE" });
     if (!res.ok) throw new Error("Error eliminando");
     cargarCliente();
   } catch (err) {
@@ -460,14 +460,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       if (clienteEditandoId) {
-        const res = await fetchSeguro(`${BACKEND_URL}/api/admin/cliente/${clienteEditandoId}`, {
+        const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes/${clienteEditandoId}`, {
           method: "PUT",
           body: JSON.stringify({ nombre, telefono, direccion, notas })
         });
         if (!res.ok) throw new Error("Error editando cliente");
         clienteEditandoId = null;
       } else {
-        const res = await fetchSeguro(`${BACKEND_URL}/api/admin/cliente`, {
+        const res = await fetchSeguro(`${BACKEND_URL}/api/admin/clientes`, {
           method: "POST",
           body: JSON.stringify({ nombre, email, telefono, direccion, notas })
         });
