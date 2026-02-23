@@ -629,7 +629,6 @@ async function cargarPedidosCliente(usuarioId) {
   document.getElementById("btnSubmitCliente").textContent = "Guardar Cambios";
   
   modal.style.display = "flex";
-};
 
 /* =========================
    EDITAR CLIENTE
