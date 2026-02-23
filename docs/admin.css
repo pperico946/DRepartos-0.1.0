@@ -899,6 +899,16 @@ body {
   gap: 0.5rem;
 }
 
+.btn-ver-detalle {
+  background: var(--info);
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
 .btn-editar,
 .btn-eliminar {
   flex: 1;
@@ -911,9 +921,13 @@ body {
 }
 
 .btn-editar {
-  background: var(--info-bg);
-  color: var(--info);
-  border: 1px solid var(--info);
+  background: var(--warning);
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
 }
 
 .btn-editar:hover {
@@ -921,13 +935,17 @@ body {
   color: white;
 }
 
-.btn-eliminar {
-  background: var(--danger-bg);
-  color: var(--danger);
-  border: 1px solid var(--danger);
+.btn-eliminar-cliente {
+  background: var(--danger);
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
 }
 
-.btn-eliminar:hover {
+.btn-eliminar-cliente {
   background: var(--danger);
   color: white;
 }
