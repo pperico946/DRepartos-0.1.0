@@ -746,38 +746,56 @@ document.addEventListener("DOMContentLoaded", () => {
         
         alert("✅ Cliente actualizado correctamente");
         clienteEditandoId = null;
-      } else {
-        // CREAR NUEVO
-        const res = await fetchSeguro(`${BACKEND_URL}/api/admin/cliente`, {
-          method: "POST",
-          body: JSON.stringify({ nombre, email, telefono, direccion, notas })
-        });
-        
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.error || "Error creando cliente");
-        }
 
-        const data = await res.json();
-        
-        const infoHtml = `
-          <div class="modal-info-cliente">
-            <div class="modal-info-content">
-              <h3>✅ Cliente Creado Exitosamente</h3>
-              <div class="info-item">
-                <span>Contraseña Temporal:</span>
-                <code>${data.passwordTemporal}</code>
-              </div>
-              <div class="info-item">
-                <span>Link de Acceso:</span>
-                <a href="${data.linkAcceso}" target="_blank">${data.linkAcceso}</a>
-              </div>
-              <button onclick="this.closest('.modal-info-cliente').remove()" class="btn-cerrar-info">Entendido</button>
-            </div>
-          </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', infoHtml);
-      }
+     } else {
+       // CREAR NUEVO
+       const res = await fetchSeguro(`${BACKEND_URL}/api/admin/cliente`, {
+         method: "POST",
+         body: JSON.stringify({ nombre, email, telefono, direccion, notas })
+       });
+     
+       if (!res.ok) {
+         const errorData = await res.json();
+         throw new Error(errorData.error || "Error creando cliente");
+       }
+
+  const data = await res.json();
+
+  // ✅ El link ahora usa el UUID del cliente, no un token aleatorio
+  const infoHtml = `
+    <div class="modal-info-cliente">
+      <div class="modal-info-content">
+        <h3>✅ Cliente Creado Exitosamente</h3>
+        <div class="info-item">
+          <span>Contraseña Temporal:</span>
+          <code>${data.passwordTemporal}</code>
+        </div>
+        <div class="info-item">
+          <span>Link de Acceso (UUID):</span>
+          <a href="${data.linkAcceso}" target="_blank"
+             style="word-break: break-all;">
+            ${data.linkAcceso}
+          </a>
+        </div>
+        <div class="info-item" style="margin-top:0.5rem;">
+          <button
+            onclick="navigator.clipboard.writeText('${data.linkAcceso}')
+              .then(() => this.textContent = '✅ Copiado!')
+              .catch(() => this.textContent = '❌ Error')"
+            class="btn-copiar-link">
+            📋 Copiar link
+          </button>
+        </div>
+        <button
+          onclick="this.closest('.modal-info-cliente').remove()"
+          class="btn-cerrar-info">
+          Entendido
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML("beforeend", infoHtml);
+}
 
       modal.style.display = "none";
       form.reset();
