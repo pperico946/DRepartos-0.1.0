@@ -98,6 +98,8 @@ async function verificarAcceso() {
       return;
     }
 
+     cargarDatosEmpresa();
+
   } catch (err) {
     console.error("Error al verificar token:", err);
     localStorage.removeItem("admin_token");
@@ -106,6 +108,28 @@ async function verificarAcceso() {
 }
 
 verificarAcceso();
+
+async function cargarDatosEmpresa() {
+  try {
+    const usuarioData = localStorage.getItem("usuario");
+    if (usuarioData) {
+      const usuario = JSON.parse(usuarioData);
+      const logoUrl = usuario?.empresa?.logo_url;
+      const logoEl  = document.getElementById("empresa-logo");
+      if (logoEl) {
+        if (logoUrl) {
+          logoEl.src    = logoUrl;
+          logoEl.alt    = usuario?.empresa?.nombre || "Logo empresa";
+          logoEl.onerror = () => { logoEl.style.display = "none"; };
+        } else {
+          logoEl.style.display = "none";
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("⚠️ No se pudieron cargar datos de empresa:", err);
+  }
+}
 
 /* =========================
    FECHA Y HORA
