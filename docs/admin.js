@@ -363,39 +363,38 @@ function renderCliente() {
     </div>
   `;
 
-  // ✅ Event listeners (no onclick inline)
-  document.querySelectorAll('.cliente-card').forEach(card => {
-    const clienteId = parseInt(card.dataset.clienteId);
-    
-    card.addEventListener('click', (e) => {
-      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
-      abrirVistaCliente(clienteId);
-    });
+document.querySelectorAll('.cliente-card').forEach(card => {
+  const clienteId = String(card.dataset.clienteId); // ← era parseInt
+  
+  card.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
+    abrirVistaCliente(clienteId);
   });
+});
 
-  document.querySelectorAll('.btn-ver-detalle').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = parseInt(btn.dataset.id);
-      abrirVistaCliente(id);
-    });
+document.querySelectorAll('.btn-ver-detalle').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const id = String(btn.dataset.id); // ← era parseInt
+    abrirVistaCliente(id);
   });
+});
 
-  document.querySelectorAll('.btn-editar').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = parseInt(btn.dataset.id);
-      editarCliente(id);
-    });
+document.querySelectorAll('.btn-editar').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const id = String(btn.dataset.id); // ← era parseInt
+    editarCliente(id);
   });
+});
 
-  document.querySelectorAll('.btn-eliminar-cliente').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = parseInt(btn.dataset.id);
-      eliminarCliente(id);
-    });
+document.querySelectorAll('.btn-eliminar-cliente').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const id = String(btn.dataset.id); // ← era parseInt
+    eliminarCliente(id);
   });
+});
 
   renderPaginacion(filtrados.length);
 }
