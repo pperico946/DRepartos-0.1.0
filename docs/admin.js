@@ -175,11 +175,12 @@ function renderTablaPedidos(pedidos) {
     return;
   }
 
-  let html = `
+ let html = `
     <table>
       <thead>
         <tr>
-          <th>ID</th>
+          <th>ID Pedido</th>
+          <th>Cliente</th>          
           <th>Fecha</th>
           <th>Texto original</th>
           <th>Pedido final</th>
@@ -191,9 +192,35 @@ function renderTablaPedidos(pedidos) {
   `;
 
   pedidos.forEach(p => {
+    const clienteUuid  = p.cliente_uuid
+      ? p.cliente_uuid.split("-")[0].toUpperCase()  // ej: "E5CFFD94"
+      : "—";
+    const clienteNombre = p.cliente_nombre || "Cliente desconocido";
     html += `
       <tr class="${p.estado}">
-        <td>${p.id}</td>
+        <td>
+          <span style="
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--accent-primary);
+            background: rgba(0,180,216,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+          ">#${p.id}</span>
+        </td>
+        <td>
+          <!-- ✅ AÑADIDO: nombre + UUID corto del cliente -->
+          <div>
+            <strong style="display:block; font-size:0.9rem;">
+              ${clienteNombre}
+            </strong>
+            <span style="
+              font-family: monospace;
+              font-size: 0.72rem;
+              color: var(--text-secondary);
+            ">${clienteUuid}</span>
+          </div>
+        </td>
         <td>${formatFecha(p.fecha)}</td>
         <td><div class="texto-original">${p.texto_original}</div></td>
         <td><div class="texto-original">${p.pedido_final}</div></td>
