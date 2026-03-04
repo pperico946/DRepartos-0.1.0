@@ -1113,7 +1113,7 @@ document.addEventListener("DOMContentLoaded", () => {
           "<span>👥</span><span>Gestión de Clientes</span>";
         cargarCliente();
       }
-
+      
       if (seccion === "configuracion") {
         document.getElementById("seccionConfiguracion").style.display = "block";
         document.getElementById("mainTitle").innerHTML =
