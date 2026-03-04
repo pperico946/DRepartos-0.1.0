@@ -1067,6 +1067,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btnSubmit.textContent = textoOriginal;
     }
 
+  });
 
    document.getElementById("btnGuardarConfig")
      ?.addEventListener("click", guardarConfiguracion);
@@ -1080,48 +1081,49 @@ document.addEventListener("DOMContentLoaded", () => {
        document.getElementById("colorHex").textContent = e.target.value;
      });
 
-     });
-
   /* =========================
    NAVEGACIÓN SIDEBAR
   ========================= */
   document.querySelectorAll(".sidebar li").forEach(item => {
-    item.addEventListener("click", () => {
-      document.querySelectorAll(".sidebar li")
-        .forEach(li => li.classList.remove("active"));
+  item.addEventListener("click", () => {
+    document.querySelectorAll(".sidebar li")
+      .forEach(li => li.classList.remove("active"));
 
-      item.classList.add("active");
+    item.classList.add("active");
 
-      const seccion = item.dataset.seccion;
+    const seccion = item.dataset.seccion;
 
-      const seccionPedidos = document.getElementById("seccionPedidos");
-      const seccionCliente = document.getElementById("seccionCliente");
+    // ✅ CORREGIDO: ocultar las 3 secciones siempre, no solo 2
+    const seccionPedidos       = document.getElementById("seccionPedidos");
+    const seccionCliente       = document.getElementById("seccionCliente");
+    const seccionConfiguracion = document.getElementById("seccionConfiguracion"); // ✅ AÑADIDO
 
-      if (seccionPedidos) seccionPedidos.style.display = "none";
-      if (seccionCliente) seccionCliente.style.display = "none";
+    if (seccionPedidos)       seccionPedidos.style.display       = "none";
+    if (seccionCliente)       seccionCliente.style.display       = "none";
+    if (seccionConfiguracion) seccionConfiguracion.style.display = "none"; // ✅ AÑADIDO
 
-      if (seccion === "pedidos") {
-        seccionPedidos.style.display = "block";
-        document.getElementById("mainTitle").innerHTML =
-          "<span>📦</span><span>Gestión de Pedidos</span>";
-        cargarPedidos();
-      }
+    if (seccion === "pedidos") {
+      seccionPedidos.style.display = "block";
+      document.getElementById("mainTitle").innerHTML =
+        "<span>📦</span><span>Gestión de Pedidos</span>";
+      cargarPedidos();
+    }
 
-      if (seccion === "cliente") {
-        seccionCliente.style.display = "block";
-        document.getElementById("mainTitle").innerHTML =
-          "<span>👥</span><span>Gestión de Clientes</span>";
-        cargarCliente();
-      }
-      
-      if (seccion === "configuracion") {
-        document.getElementById("seccionConfiguracion").style.display = "block";
-        document.getElementById("mainTitle").innerHTML =
+    if (seccion === "cliente") {
+      seccionCliente.style.display = "block";
+      document.getElementById("mainTitle").innerHTML =
+        "<span>👥</span><span>Gestión de Clientes</span>";
+      cargarCliente();
+    }
+
+    if (seccion === "configuracion") {
+      seccionConfiguracion.style.display = "block";
+      document.getElementById("mainTitle").innerHTML =
         "<span>⚙️</span><span>Configuración</span>";
-        cargarConfiguracion();
-      }
-    });
+      cargarConfiguracion();
+    }
   });
+});
 
   // Cargar datos iniciales
   cargarPedidos();
