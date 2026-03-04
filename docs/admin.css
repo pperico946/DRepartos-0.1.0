@@ -1197,3 +1197,58 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==================== CONFIGURACIÓN ==================== */
+.config-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 15px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.config-card h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.config-form label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+}
+
+.config-form label:first-child {
+  margin-top: 0;
+}
+
+.config-form input[type="text"] {
+  width: 100%;
+  padding: 0.9rem 1.1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.config-form input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.15);
+}
+
+.plan-info .cliente-info-item strong {
+  font-size: 0.95rem;
+}

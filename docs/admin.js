@@ -711,6 +711,214 @@ async function eliminarCliente(id) {
 }
 
 /* =========================
+   CONFIGURACIÓN
+========================= */
+
+// Cargar toda la configuración al entrar a la sección
+async function cargarConfiguracion() {
+  try {
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/configuracion`);
+    if (!res.ok) throw new Error("Error cargando configuración");
+
+    const config = await res.json();
+
+    // ── Plan actual ──
+    const porcentajePedidos = Math.round(
+      (config.uso_pedidos_mes / config.max_pedidos_mes) * 100
+    );
+    const porcentajeTokens = Math.round(
+      (config.uso_tokens_mes / config.max_tokens_mes) * 100
+    );
+
+    document.getElementById("infoPlan").innerHTML = `
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+        <div class="cliente-info-item">
+          <span>Plan activo</span>
+          <strong style="color:var(--accent-primary); font-size:1.1rem;">
+            ${config.plan_id.charAt(0).toUpperCase() + config.plan_id.slice(1)}
+          </strong>
+        </div>
+        <div class="cliente-info-item">
+          <span>Pedidos este mes</span>
+          <strong>${config.uso_pedidos_mes} / ${config.max_pedidos_mes}</strong>
+          <div style="background:var(--bg-primary); border-radius:4px; height:6px; margin-top:6px;">
+            <div style="
+              background:${porcentajePedidos > 80 ? 'var(--danger)' : 'var(--accent-primary)'};
+              width:${Math.min(porcentajePedidos, 100)}%;
+              height:100%; border-radius:4px;
+              transition: width 0.5s ease;">
+            </div>
+          </div>
+        </div>
+        <div class="cliente-info-item">
+          <span>Tokens IA este mes</span>
+          <strong>${config.uso_tokens_mes.toLocaleString()} / ${config.max_tokens_mes.toLocaleString()}</strong>
+          <div style="background:var(--bg-primary); border-radius:4px; height:6px; margin-top:6px;">
+            <div style="
+              background:${porcentajeTokens > 80 ? 'var(--danger)' : 'var(--success)'};
+              width:${Math.min(porcentajeTokens, 100)}%;
+              height:100%; border-radius:4px;
+              transition: width 0.5s ease;">
+            </div>
+          </div>
+        </div>
+        <div class="cliente-info-item">
+          <span>Importar catálogo</span>
+          <strong>${config.puede_importar_catalogo ? '✅ Incluido' : '❌ No incluido'}</strong>
+        </div>
+      </div>
+    `;
+
+    // ── Datos de empresa ──
+    document.getElementById("inputTipoNegocio").value  = config.tipo_negocio    || "";
+    document.getElementById("inputColor").value        = config.color_primario  || "#00b4d8";
+    document.getElementById("colorHex").textContent    = config.color_primario  || "#00b4d8";
+
+    // ── Catálogo: mostrar/ocultar según plan ──
+    if (!config.puede_importar_catalogo) {
+      document.getElementById("alertaPlan").style.display   = "block";
+      document.getElementById("textoCatalogo").disabled     = true;
+      document.getElementById("btnImportarCatalogo").disabled = true;
+    } else {
+      document.getElementById("alertaPlan").style.display   = "none";
+      document.getElementById("textoCatalogo").disabled     = false;
+      document.getElementById("btnImportarCatalogo").disabled = false;
+    }
+
+    // ── Mostrar catálogo existente si lo hay ──
+    if (config.catalogo && config.catalogo.length > 0) {
+      renderCatalogo(config.catalogo);
+    }
+
+  } catch (err) {
+    console.error("❌ Error cargando configuración:", err);
+  }
+}
+
+// Renderizar catálogo en cards visuales
+function renderCatalogo(catalogo) {
+  const preview   = document.getElementById("catalogoPreview");
+  const lista     = document.getElementById("listaCatalogo");
+  const totalEl   = document.getElementById("totalProductos");
+
+  if (!preview || !lista) return;
+
+  totalEl.textContent = catalogo.length;
+  preview.style.display = "block";
+
+  lista.innerHTML = `
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:1rem;">
+      ${catalogo.map(p => `
+        <div class="cliente-info-item">
+          <span style="text-transform:capitalize; font-size:0.85rem;">
+            📦 ${p.nombre}
+          </span>
+          <strong style="font-size:0.9rem;">
+            ${p.unidades?.join(" · ") || "—"}
+          </strong>
+          ${p.variantes?.length
+            ? `<small style="color:var(--text-secondary); font-size:0.75rem; margin-top:4px; display:block;">
+                Variantes: ${p.variantes.join(", ")}
+               </small>`
+            : ""
+          }
+          ${p.cantidad_minima
+            ? `<small style="color:var(--text-secondary); font-size:0.75rem;">
+                Mín: ${p.cantidad_minima}
+               </small>`
+            : ""
+          }
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+// Guardar datos básicos de empresa
+async function guardarConfiguracion() {
+  const btn     = document.getElementById("btnGuardarConfig");
+  const msgEl   = document.getElementById("msgConfig");
+  const original = btn.textContent;
+
+  btn.disabled    = true;
+  btn.textContent = "Guardando...";
+  msgEl.textContent = "";
+
+  try {
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/configuracion`, {
+      method: "PUT",
+      body: JSON.stringify({
+        tipo_negocio:    document.getElementById("inputTipoNegocio").value.trim(),
+        color_primario:  document.getElementById("inputColor").value
+      })
+    });
+
+    if (!res.ok) throw new Error("Error guardando");
+
+    msgEl.style.color   = "var(--success)";
+    msgEl.textContent   = "✅ Configuración guardada correctamente";
+
+  } catch (err) {
+    msgEl.style.color   = "var(--danger)";
+    msgEl.textContent   = "❌ Error guardando: " + err.message;
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = original;
+    setTimeout(() => { msgEl.textContent = ""; }, 4000);
+  }
+}
+
+// Importar catálogo con IA
+async function importarCatalogo() {
+  const texto   = document.getElementById("textoCatalogo").value.trim();
+  const btn     = document.getElementById("btnImportarCatalogo");
+  const msgEl   = document.getElementById("msgCatalogo");
+  const original = btn.textContent;
+
+  if (!texto) {
+    msgEl.style.color = "var(--warning)";
+    msgEl.textContent = "⚠️ Escribe el listado de productos primero";
+    return;
+  }
+
+  btn.disabled    = true;
+  btn.textContent = "⏳ Procesando con IA...";
+  msgEl.style.color   = "var(--text-secondary)";
+  msgEl.textContent   = "La IA está interpretando tu catálogo...";
+
+  try {
+    const res = await fetchSeguro(`${BACKEND_URL}/api/admin/catalogo/importar`, {
+      method: "POST",
+      body: JSON.stringify({ textoPlano: texto })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      // Si el plan no lo permite
+      if (data.codigo === "PLAN_INSUFICIENTE") {
+        msgEl.style.color = "var(--danger)";
+        msgEl.textContent = "❌ Tu plan no incluye esta función. Actualiza a Profesional.";
+        return;
+      }
+      throw new Error(data.error || "Error importando");
+    }
+
+    msgEl.style.color   = "var(--success)";
+    msgEl.textContent   = `✅ ${data.productos_importados} productos importados correctamente`;
+
+    renderCatalogo(data.catalogo);
+
+  } catch (err) {
+    msgEl.style.color   = "var(--danger)";
+    msgEl.textContent   = "❌ Error: " + err.message;
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = original;
+  }
+}
+
+/* =========================
    INICIALIZACIÓN GENERAL
 ========================= */
 document.addEventListener("DOMContentLoaded", () => {
@@ -858,7 +1066,21 @@ document.addEventListener("DOMContentLoaded", () => {
       btnSubmit.disabled = false;
       btnSubmit.textContent = textoOriginal;
     }
-  });
+
+
+   document.getElementById("btnGuardarConfig")
+     ?.addEventListener("click", guardarConfiguracion);
+
+   document.getElementById("btnImportarCatalogo")
+     ?.addEventListener("click", importarCatalogo);
+
+   // Preview del color en tiempo real
+   document.getElementById("inputColor")
+     ?.addEventListener("input", (e) => {
+       document.getElementById("colorHex").textContent = e.target.value;
+     });
+
+     });
 
   /* =========================
    NAVEGACIÓN SIDEBAR
@@ -890,6 +1112,13 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("mainTitle").innerHTML =
           "<span>👥</span><span>Gestión de Clientes</span>";
         cargarCliente();
+      }
+
+      if (seccion === "configuracion") {
+        document.getElementById("seccionConfiguracion").style.display = "block";
+        document.getElementById("mainTitle").innerHTML =
+        "<span>⚙️</span><span>Configuración</span>";
+        cargarConfiguracion();
       }
     });
   });
